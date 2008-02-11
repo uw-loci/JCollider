@@ -255,7 +255,8 @@ implements FileFilter, ServerListener, Constants
 	private void createDefs()
 	{
 		try {
-			UGenInfo.readDefinitions();
+//			UGenInfo.readDefinitions();
+			UGenInfo.readBinaryDefinitions();
 
 			final java.util.List collDefs = DemoDefs.create();
 			Collections.sort( collDefs, synthDefNameComp );
@@ -263,7 +264,8 @@ implements FileFilter, ServerListener, Constants
 			defTables[ 0 ].addDefs( collDefs );
 		}
 		catch( IOException e1 ) {
-			reportError( e1 );
+			e1.printStackTrace();
+//			reportError( e1 );
 		}
 	}
 

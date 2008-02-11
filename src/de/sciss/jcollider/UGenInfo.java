@@ -2,7 +2,7 @@
  *  UGenInfo.java
  *  JCollider
  *
- *  Copyright (c) 2004-2007 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2008 Hanns Holger Rutz. All rights reserved.
  *
  *	This software is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -27,21 +27,23 @@
  *	often exhibiting a direct translation from Smalltalk to Java.
  *	SCLang is a software originally developed by James McCartney,
  *	which has become an Open Source project.
- *	See http://www.audiosynth.com/ for details.
+ *	See http://supercollider.sourceforge.net/ for details.
  *
  *
  *  Changelog:
  *		04-Sep-05	created
+ *		11-Feb-08	supports binary definition files
  */
 
 package de.sciss.jcollider;
 
-//import java.io.File;
+import java.io.BufferedInputStream;
+import java.io.DataInputStream;
+import java.io.File;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-//import java.io.RandomAccessFile;
-//import java.util.Arrays;
+import java.io.RandomAccessFile;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -86,7 +88,7 @@ import org.xml.sax.SAXParseException;
  *	the database initialization, saving some startup time.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.31, 15-Oct-07
+ *  @version	0.32, 11-Feb-08
  *
  *	@see		#readDefinitions
  *	@see		UGen#ar( String )
@@ -97,6 +99,9 @@ implements Constants, Comparable
 	private static final String UGENDEFS_DTD = "ugendefs.dtd";
 
 	private static final EntityResolver dtdResolver = new DTDResolver();
+	
+	private static final int BINARY_FILE_COOKIE		= 0x7567656E;	// "ugen"
+	private static final int BINARY_FILE_VERSION	= 0; 
 	
 	/**
 	 *	This field contains a read-only map
@@ -344,6 +349,12 @@ implements Constants, Comparable
 	 *	<p>
 	 *	When this method returns, the database is available
 	 *	from the static <code>infos</code> field.
+	 *	<p>
+	 *	A much faster (around 20 times) way is to convert the xml file int
+	 *	a binary file, by calling <code>writeBinaryDefinitions</code>
+	 *	afterwards (or run JCollider with the <code>--bindefs</code> option).
+	 *	<p>
+	 *	The binary variant of this method is <code>readBinaryDefinitions</code>.
 	 *
 	 *	@throws	IOException	if the definitions file couldn't be read.
 	 *						this should never happen if you don't touch the
@@ -352,17 +363,20 @@ implements Constants, Comparable
 	 *						file is malformed
 	 *
 	 *	@see	#infos
+	 *	@see	#readBinaryDefinitions()
+	 *	@see	#writeBinaryDefinitions( File )
 	 */
 	public static void readDefinitions()
 	throws IOException
 	{
+//final long t1 = System.currentTimeMillis();
 		final Document					domDoc;
 		final DocumentBuilderFactory	builderFactory;
 		final DocumentBuilder			builder;
 		final NodeList					ugenList;
 		final Map						map			= new HashMap();
 		Element							node, elem;
-		UGenInfo						ui;
+		UGenInfo						info;
 
 		try {
 			builderFactory	= DocumentBuilderFactory.newInstance();
@@ -375,11 +389,11 @@ implements Constants, Comparable
 			
 			for( int i = 0; i < ugenList.getLength(); i++ ) {
 				elem		= (Element) ugenList.item( i );
-				ui			= decodeUGenNode( domDoc, elem );
-				map.put( ui.className, ui );
-				if( ui.specials != null ) {
-					for( Iterator iter = ui.specials.keySet().iterator(); iter.hasNext(); ) {
-						map.put( iter.next(), ui );	// alias entry
+				info		= decodeUGenNode( domDoc, elem );
+				map.put( info.className, info );
+				if( info.specials != null ) {
+					for( Iterator iter = info.specials.keySet().iterator(); iter.hasNext(); ) {
+						map.put( iter.next(), info );	// alias entry
 					}
 				}
 			}
@@ -395,24 +409,194 @@ implements Constants, Comparable
 		}
 		
 		UGenInfo.infos = map;
+//final long t2 = System.currentTimeMillis();
+//System.out.println( "readDefinitions took " + (t2-t1) + " ms" );
 	}
 	
-//	public static void writeBinaryDefinitions( File path )
-//	throws IOException
+//	private static void writeP16String( RandomAccessFile raf, String s )
 //	{
-//		final Object[]			keys 	= infos.keySet().toArray();
-//		final RandomAccessFile	raf		= new RandomAccessFile( path, "wb" );
-//		UGenInfo				info;
-//	
-//		raf.writeInt( );
-//		
-//		Arrays.sort( keys, null );
-//		
-//		for( int i = 0; i < keys.length; i++ ) {
-//			info	= (UGenInfo) infos.get( keys[ i ]);
-//			info.className
-//		}
+//		raf.writeShort( s.getLength() );
+//		raf.writeChars( str );
 //	}
+	
+	/**
+	 *	Writes the infos out as a binary file that
+	 *	can be read in again using the <code>readBinaryDefinitions</code>
+	 *	method. You will need to move the resulting file into
+	 *	the resources folder and re-jar the library in order to
+	 *	use <code>readBinaryDefinitions</code>.
+	 *
+	 *	@see	#readDefinitions()
+	 *	@see	#readBinaryDefinitions()
+	 */
+	public static void writeBinaryDefinitions( File path )
+	throws IOException
+	{
+		final RandomAccessFile	raf;
+		final UGenInfo[]		infos2	= new UGenInfo[ infos.size() ];
+		UGenInfo				info;
+		int						numInfos, iRates, flags, numSpecials;
+		Map.Entry				me;
+	
+		if( path.exists() ) {
+			if( !path.delete() ) throw new IOException( "Could not overwrite " + path );
+		}
+		raf = new RandomAccessFile( path, "rw" );
+		numInfos = 0;
+		for( Iterator iter = infos.entrySet().iterator(); iter.hasNext(); ) {
+			me		= (Map.Entry) iter.next();
+			info	= (UGenInfo) me.getValue();
+			if( me.getKey().equals( info.className )) {
+				infos2[ numInfos++ ] = info;
+			}
+		}
+		
+		try {
+			raf.writeInt( BINARY_FILE_COOKIE );
+			raf.writeShort( BINARY_FILE_VERSION );
+			raf.writeShort( numInfos );
+			
+			for( int i = 0; i < numInfos; i++ ) {
+				info	= infos2[ i ];
+				iRates	= 0;
+				if( info.rates.contains( kScalarRate ))  iRates |= 0x01;
+				if( info.rates.contains( kControlRate )) iRates |= 0x02;
+				if( info.rates.contains( kAudioRate ))   iRates |= 0x04;
+				if( info.rates.contains( kDemandRate ))  iRates |= 0x08;
+				raf.writeUTF( info.className );
+				raf.writeByte( iRates );
+				raf.writeByte( info.outputType );
+				raf.writeShort( info.outputVal );
+				raf.writeFloat( info.outputMul );
+				raf.writeShort( info.args.length );
+				for( int j = 0; j < info.args.length; j++ ) {
+					raf.writeUTF( info.args[ j ].name );
+					raf.writeFloat( info.args[ j ].min );
+					raf.writeFloat( info.args[ j ].max );
+					raf.writeFloat( info.args[ j ].def );
+					flags = 0;
+					if( info.args[ j ].isArray ) flags |= 0x01;
+					raf.writeByte( flags );
+				}
+				numSpecials = info.specials == null ? 0 : info.specials.size();
+				raf.writeShort( numSpecials );
+				if( numSpecials > 0 ) {
+					for( Iterator iter = info.specials.entrySet().iterator(); iter.hasNext(); ) {
+						me = (Map.Entry) iter.next();
+						raf.writeUTF(  me.getKey().toString() );
+						raf.writeShort( ((Number) me.getValue()).shortValue() );
+					}
+				}
+			}
+		}
+		finally {
+			raf.close();
+		}
+	}
+
+	/**
+	 *	Reads in the ugen definition database
+	 *	from a binary resource inside the libraries jar file
+	 *	(<code>ugendefs.bin</code>). Call this method
+	 *	once before using the database, i.e. before
+	 *	constructing UGens or showing a synth def diagram.
+	 *	<p>
+	 *	When this method returns, the database is available
+	 *	from the static <code>infos</code> field.
+	 *	<p>
+	 *	To update the ugen definitions, edit the <code>ugendefs.xml</code>
+	 *	file and run JCollider with the <code>--bindefs</code> option.
+	 *	Move the resulting binary file into the <code>resources</code>
+	 *	folder and re-jar the library.
+	 *	<p>
+	 *	Reading the binary file instead of the xml file is
+	 *	a lot faster (around 20 times).
+	 *
+	 *	@throws	IOException	if the definitions file couldn't be read.
+	 *
+	 *	@see	#infos
+	 *	@see	#readDefinitions()
+	 *	@see	#writeBinaryDefinitions( File )
+	 */
+	public static void readBinaryDefinitions()
+	throws IOException
+	{
+//final long t1 = System.currentTimeMillis();
+		final DataInputStream	dis;
+		final Map				map;
+		final int 				numInfos;
+		final UGenInfo[]		infos;
+		String					className, name;
+		int						mapSize, iRates, outputType, outputVal;
+		int						numArgs, flags, specialValue, numSpecials;
+		float					outputMul, min, max, def;
+		boolean					isArray;
+		UGenInfo				info;
+		Arg[]					args;
+		Set						rates;
+		Map						specials;
+
+		dis = new DataInputStream( new BufferedInputStream( ClassLoader.getSystemClassLoader().getResourceAsStream( "ugendefs.bin" )));
+		try {
+			if( dis.readInt() != BINARY_FILE_COOKIE ) throw new IOException( "Not a valid binary ugen file" );
+			if( dis.readShort() > BINARY_FILE_VERSION ) throw new IOException( "Unsupport binary ugen file version" );
+			numInfos	= dis.readShort();
+			infos		= new UGenInfo[ numInfos ];
+			mapSize		= numInfos;
+			for( int i = 0; i < numInfos; i++ ) {
+				className	= dis.readUTF();
+				iRates		= dis.readByte();
+				rates		= new HashSet( 4 );
+				if( (iRates & 0x01) != 0 ) rates.add( kScalarRate );
+				if( (iRates & 0x02) != 0 ) rates.add( kControlRate );
+				if( (iRates & 0x04) != 0 ) rates.add( kAudioRate );
+				if( (iRates & 0x08) != 0 ) rates.add( kDemandRate );
+				outputType	= dis.readByte();
+				outputVal	= dis.readShort();
+				outputMul	= dis.readFloat();
+				numArgs		= dis.readShort();
+				args		= new Arg[ numArgs ];
+				for( int j = 0; j < numArgs; j++ ) {
+					name	= dis.readUTF();
+					min		= dis.readFloat();
+					max		= dis.readFloat();
+					def		= dis.readFloat();
+					flags	= dis.readByte();
+					isArray	= (flags & 0x01) != 0;
+					args[ j ] = new Arg( name, min, max, def, isArray );
+				}
+				numSpecials	= dis.readShort();
+				if( numSpecials > 0 ) {
+					specials = new HashMap( numSpecials );
+					for( int j = 0; j < numSpecials; j++ ) {
+						name			= dis.readUTF();
+						specialValue	= dis.readShort();
+						specials.put( name, new Integer( specialValue ));
+					}
+				} else {
+					specials = null;
+				}
+				infos[ i ]	= new UGenInfo( className, args, rates, specials, outputType, outputVal, outputMul );
+			}
+			map = new HashMap( mapSize );
+			for( int i = 0; i < numInfos; i++ ) {
+				info	= infos[ i ];
+				map.put( info.className, info );
+				if( info.specials != null ) {
+					for( Iterator iter = info.specials.keySet().iterator(); iter.hasNext(); ) {
+						map.put( iter.next(), info );	// alias entry
+					}
+				}
+			}
+		}
+		finally {
+			dis.close();
+		}
+		
+		UGenInfo.infos = map;
+//final long t2 = System.currentTimeMillis();
+//System.out.println( "readBinaryDefinitions took " + (t2-t1) + " ms" );
+	}
 
 	private static UGenInfo decodeUGenNode( Document domDoc, Element node )
 	{

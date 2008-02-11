@@ -2,7 +2,7 @@
  *  Buffer.java
  *  JCollider
  *
- *  Copyright (c) 2004-2007 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2008 Hanns Holger Rutz. All rights reserved.
  *
  *	This software is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -27,7 +27,7 @@
  *	often exhibiting a direct translation from Smalltalk to Java.
  *	SCLang is a software originally developed by James McCartney,
  *	which has become an Open Source project.
- *	See http://www.audiosynth.com/ for details.
+ *	See http://supercollider.sourceforge.net/ for details.
  *
  *
  *  Changelog:
@@ -68,7 +68,6 @@ import de.sciss.net.OSCMessage;
  *  @version	0.31, 08-Oct-07
  *
  *	@todo		custom fill commands (sine1 etc.)
- *	@todo		allocReadChannel and readChannel methods
  */
 public class Buffer
 implements Constants

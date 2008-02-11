@@ -2,7 +2,7 @@
  *  ServerOptions.java
  *  JCollider
  *
- *  Copyright (c) 2004-2007 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2008 Hanns Holger Rutz. All rights reserved.
  *
  *	This software is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -27,13 +27,14 @@
  *	often exhibiting a direct translation from Smalltalk to Java.
  *	SCLang is a software originally developed by James McCartney,
  *	which has become an Open Source project.
- *	See http://www.audiosynth.com/ for details.
+ *	See http://supercollider.sourceforge.net/ for details.
  *
  *
  *  Changelog:
  *		03-Aug-05	created
  *		24-Jul-06	added variable block allocator class
- *		08-Oct-07	added environment variable support (i.e. for Jack)
+ *		08-Oct-07	added environment variable support (i.e. for Jack); REMOVED AGAIN
+ *		11-Feb-08	added options for rendezvous and verbosity
  */
 
 package de.sciss.jcollider;
@@ -46,10 +47,10 @@ import java.util.List;
 
 /**
  *	A class full of getter/setter methods
- *	to describe the options to boot a local scsynth server
+ *	to describe the options to boot a local scsynth server.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.31, 08-Oct-07
+ *  @version	0.32, 11-Feb-08
  */
 public class ServerOptions
 {
@@ -80,6 +81,8 @@ public class ServerOptions
 	private static final String		DEFAULT_INPUTSTREAMSENABLED		= null;
 	private static final String		DEFAULT_OUTPUTSTREAMSENABLED	= null;
 	private static final String		DEFAULT_DEVICE					= null;
+	private static final int		DEFAULT_VERBOSITY				= 0;
+	private static final boolean	DEFAULT_RENDEZVOUS				= true;
 
 	private int						numAudioBusChannels				= DEFAULT_NUMAUDIOBUSCHANNELS;
 	private int						numControlBusChannels			= DEFAULT_NUMCONTROLBUSCHANNELS;
@@ -101,6 +104,8 @@ public class ServerOptions
 	private String					device							= DEFAULT_DEVICE;
 	private BlockAllocator.Factory	blockAlloc						= new PowerOfTwoAllocator.Factory();
 //	private Map						envVars							= new HashMap();
+	private int						verbosity						= DEFAULT_VERBOSITY;
+	private boolean					rendezvous						= DEFAULT_RENDEZVOUS;
 
 	/**
 	 *	Creates a list of all the server options,
@@ -207,6 +212,14 @@ public class ServerOptions
 		if( device != DEFAULT_DEVICE ) {
 			coll.add( "-H" );
 			coll.add( device );
+		}
+		if( verbose || (verbosity != DEFAULT_VERBOSITY) ) {
+			coll.add( "-v" );
+			coll.add( String.valueOf( verbosity ));
+		}
+		if( verbose || (rendezvous != DEFAULT_RENDEZVOUS) ) {
+			coll.add( "-R" );
+			coll.add( String.valueOf( rendezvous ? 1 : 0 ));
 		}
 		
 		return coll;
@@ -418,6 +431,26 @@ public class ServerOptions
 		blockAlloc = baf;
 	}
 	
+	public int getVerbosity()
+	{
+		return verbosity;
+	}
+	
+	public void setVerbosity( int verbosity )
+	{
+		this.verbosity = verbosity;
+	}
+
+	public boolean getRendezvous()
+	{
+		return rendezvous;
+	}
+	
+	public void setRendezvous( boolean rendezvous )
+	{
+		this.rendezvous = rendezvous;
+	}
+
 //	public void setEnv( String key, String value )
 //	{
 //		envVars.put( key, value );

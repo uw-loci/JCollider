@@ -2,7 +2,7 @@
  *  JCollider.java
  *  JCollider
  *
- *  Copyright (c) 2004-2007 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2008 Hanns Holger Rutz. All rights reserved.
  *
  *	This software is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -27,11 +27,12 @@
  *	often exhibiting a direct translation from Smalltalk to Java.
  *	SCLang is a software originally developed by James McCartney,
  *	which has become an Open Source project.
- *	See http://www.audiosynth.com/ for details.
+ *	See http://supercollider.sourceforge.net/ for details.
  *
  *
  *  Changelog:
  *		10-Sep-05	created
+ *		11-Feb-08	added --bindefs option
  */
 
 package de.sciss.jcollider;
@@ -39,6 +40,8 @@ package de.sciss.jcollider;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Font;
+import java.io.File;
+import java.io.IOException;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
@@ -49,11 +52,11 @@ import javax.swing.SwingUtilities;
  *  This is a helper class containing utility static functions
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.31, 08-Oct-07
+ *  @version	0.32, 11-Feb-08
  */
 public abstract class JCollider
 {
-	private static final double VERSION	= 0.31;
+	private static final double VERSION	= 0.32;
 	private static final ResourceBundle resBundle = ResourceBundle.getBundle( "JColliderStrings" );
 //	private static final Preferences prefs = Preferences.userNodeForPackage( JCollider.class );
 
@@ -77,7 +80,8 @@ public abstract class JCollider
 	 *
 	 *	@param	args	shell arguments. there may be a single argument
 	 *					&quot;--test1&quot; or &quot;--test2&quot; to
-	 *					run the demos.
+	 *					run the demos. &quot;--bindefs&quot; to create
+	 *					a binary def file from the xml descriptions
 	 */
     public static void main( String args[] )
 	{
@@ -88,6 +92,16 @@ public abstract class JCollider
 				demoClass = "de.sciss.jcollider.test.Demo";
 			} else if( args[ 0 ].equals( "--test2" )) {
 				demoClass = "de.sciss.jcollider.test.MotoRevCtrl";
+			} else if( args[ 0 ].equals( "--bindefs" )) {
+				try {
+					UGenInfo.readDefinitions();
+					UGenInfo.writeBinaryDefinitions( new File( "ugendefs.bin" ));
+				}
+				catch( IOException e1 ) {
+					e1.printStackTrace();
+				}
+				demoClass = null;
+				System.exit( 0 );
 			} else {
 				demoClass = null;
 			}
@@ -116,7 +130,10 @@ public abstract class JCollider
 				getCreditsString() + "\n\n  " +
 				getResourceString( "errIsALibrary" ));
 			
-			System.out.println( "\nThe following demos are available:\n  --test1    SynthDef demo\n  --test2    MotoRev Control Demo\n" );
+			System.out.println( "\nThe following options are available:\n"+
+			                    "--test1    SynthDef demo\n"+
+			                    "--test2    MotoRev Control Demo\n"+
+			                    "--bindefs  Create Binary UGen Definitions\n");
 			System.exit( 1 );
 		}
     }

@@ -2,7 +2,7 @@
  *  Node.java
  *  JCollider
  *
- *  Copyright (c) 2004-2007 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2008 Hanns Holger Rutz. All rights reserved.
  *
  *	This software is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -27,7 +27,7 @@
  *	often exhibiting a direct translation from Smalltalk to Java.
  *	SCLang is a software originally developed by James McCartney,
  *	which has become an Open Source project.
- *	See http://www.audiosynth.com/ for details.
+ *	See http://supercollider.sourceforge.net/ for details.
  *
  *
  *  Changelog:
@@ -68,7 +68,7 @@ import de.sciss.net.OSCMessage;
  *				is run-, set-, trace- and free-messages
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.29, 17-Sep-06
+ *  @version	0.32, 11-Feb-08
  *
  *	@see		de.sciss.jcollider.gui.NodeTreeManager
  *	@see		NodeWatcher
@@ -1391,7 +1391,21 @@ implements Constants, TreeNode
 	{
 		return new OSCMessage( "/n_query", new Object[] { new Integer( getNodeID() )});
 	}
+
+	public void register()
+	throws IOException
+	{
+		register( false );
+	}
 	
+	public void register( boolean assumePlaying )
+	throws IOException
+	{
+//		NodeWatcher.register( this, assumePlaying );
+		final NodeWatcher watcher = NodeWatcher.newFrom( getServer() );
+		watcher.register( this, assumePlaying );
+	}
+
 	/**
 	 *	Moves the node before another node in the server graph.
 	 *

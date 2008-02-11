@@ -2,7 +2,7 @@
  *  NodeWatcher.java
  *  JCollider
  *
- *  Copyright (c) 2004-2007 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2008 Hanns Holger Rutz. All rights reserved.
  *
  *	This software is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -27,7 +27,7 @@
  *	often exhibiting a direct translation from Smalltalk to Java.
  *	SCLang is a software originally developed by James McCartney,
  *	which has become an Open Source project.
- *	See http://www.audiosynth.com/ for details.
+ *	See http://supercollider.sourceforge.net/ for details.
  *
  *
  *  Changelog:
@@ -73,7 +73,7 @@ import de.sciss.net.OSCPacket;
  *	use the <code>Node</code>'s <code>TreeNode</code> interface.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.292, 29-Oct-06
+ *  @version	0.32, 11-Feb-08
  *
  *	@synchronization	all methods are thread safe unless explicitely noted
  *						; however you should avoid to register a node at more than
@@ -207,7 +207,14 @@ implements EventManager.Processor, OSCListener, Constants, Runnable
 		}
 	}
 
-	/**
+
+//*unregister { arg node;
+//	var watcher;
+//	watcher = this.newFrom(node.server);
+//	watcher.unregister(node);
+//}
+
+/**
 	 *	Adds a node to the list of known nodes.
 	 *	The node will be automatically removed, when
 	 *	a corresponding <code>&quot;/n_end&quot;</code>
@@ -229,9 +236,20 @@ implements EventManager.Processor, OSCListener, Constants, Runnable
 	 */
 	public void register( Node node )
 	{
+		register( node, false );
+	}
+	
+	public void register( Node node, boolean assumePlaying )
+	{
 		synchronized( sync ) {
-			mapNodes.put( new Integer( node.getNodeID() ), node );
-			if( VERBOSE ) System.err.println( "NodeWatcher.register( " + node + " )" );
+			if( watching ) {
+				final Object key = new Integer( node.getNodeID() );
+				if( assumePlaying && mapNodes.containsKey( key )) {
+					node.setPlaying( true );
+				}
+				mapNodes.put( key, node );
+				if( VERBOSE ) System.err.println( "NodeWatcher.register( " + node + " )" );
+			}
 		}
 	}
 

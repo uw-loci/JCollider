@@ -57,7 +57,8 @@ implements ServerListener
 
 		createControlWindow();
 		try {
-			UGenInfo.readDefinitions();	// necessary if we build our own synth defs
+//			UGenInfo.readDefinitions();	// necessary if we build our own synth defs
+			UGenInfo.readBinaryDefinitions();	// necessary if we build our own synth defs
 			server	= new Server( "myServer" );
 			File f = findFile( JCollider.isWindows ? "scsynth.exe" : "scsynth", new String[] {
 				fs + "Applications" + fs + "SuperCollider_f",
@@ -77,7 +78,8 @@ implements ServerListener
 			catch( IOException e1 ) {}
 		}
 		catch( IOException e1 ) {
-			reportError( e1 );
+			e1.printStackTrace();
+//			reportError( e1 );
 			System.exit( 1 );
 		}
 		createServerWindow();
