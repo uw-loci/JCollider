@@ -50,7 +50,7 @@ import java.util.Set;
  *	It does not exhibit the fragmentation problem of the PowerOfTwoAllocator.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.28, 24-Jul-06
+ *  @version	0.32, 25-Feb-08
  *
  *	@todo		freed should be a sorted Map !! then findAvailable could be faster
  *
@@ -323,9 +323,9 @@ implements BlockAllocator
 	private static class Block
 	implements BlockAllocator.Block
 	{
-		private final int	start;
-		private final int	size;
-		private boolean		used	= false;  // assume free; owner must say otherwise
+		protected final int	start;
+		protected final int	size;
+		protected boolean	used	= false;  // assume free; owner must say otherwise
 
 		public Block( int start, int size )
 		{

@@ -65,7 +65,7 @@ import de.sciss.net.OSCMessage;
  *				is alloc-, read-, free-, zero- and close-messages
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.31, 08-Oct-07
+ *  @version	0.32, 25-Feb-08
  *
  *	@todo		custom fill commands (sine1 etc.)
  */
@@ -430,7 +430,7 @@ implements Constants
 					if( bufs[ i ] != null ) {
 						try {
 							bufs[ i ].free();
-						} catch( IOException e1 ) {}
+						} catch( IOException e1 ) { /* ignored */ }
 					}
 				}
 			}

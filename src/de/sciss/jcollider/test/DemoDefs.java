@@ -10,6 +10,9 @@ import de.sciss.net.OSCBundle;
  *	Static example generator
  *	to compare with SC examples
  *	found in the from-SC2.rtf file
+ *
+ *	@author		Hanns Holger Rutz
+ *	@version	0.32, 24-Feb-08
  */
 public abstract class DemoDefs
 {
@@ -360,7 +363,6 @@ public abstract class DemoDefs
 		SynthDef	def;
 		long		time;
 
-		f = null;
 		for( int i = 0; i < 4; i++ ) {
 			g = UGen.ar( "*", UGen.ar( "LFSaw", UGen.kr( "midicps", UGen.kr( "MulAdd",
 				UGen.kr( "LFPulse", UGen.ir( 0.06f ), UGen.ir( 0 ), UGen.ir( 0.5f )),

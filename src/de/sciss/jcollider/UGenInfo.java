@@ -88,7 +88,7 @@ import org.xml.sax.SAXParseException;
  *	the database initialization, saving some startup time.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.32, 11-Feb-08
+ *  @version	0.32, 25-Feb-08
  *
  *	@see		#readDefinitions
  *	@see		UGen#ar( String )
@@ -734,7 +734,7 @@ implements Constants, Comparable
 		 */
 		public final boolean	isArray;
 		
-		private Arg( String name, float min, float max, float def, boolean isArray )
+		protected Arg( String name, float min, float max, float def, boolean isArray )
 		{
 			this.name		= name;
 			this.min		= min;
@@ -743,7 +743,7 @@ implements Constants, Comparable
 			this.isArray	= isArray;
 		}
 
-		private Arg( String name, float def, boolean isArray )
+		protected Arg( String name, float def, boolean isArray )
 		{
 			this( name, Float.NEGATIVE_INFINITY, Float.POSITIVE_INFINITY, def, isArray );
 		}
@@ -762,6 +762,8 @@ implements Constants, Comparable
 	private static class DTDResolver
 	implements EntityResolver
 	{
+		protected DTDResolver() { /* empty */ }
+		
 		/**
 		 *  This Resolver can be used for loading documents.
 		 *	If the required DTD is the Meloncillo session DTD

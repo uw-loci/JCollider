@@ -57,6 +57,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.JTree;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.WindowConstants;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -95,17 +97,17 @@ implements TreeSelectionListener, TreeModelListener
 	private final JTree				ggTree;
 	private final Node				rootNode;
 	
-	private boolean					selectionContainsSynths		= false;
-	private boolean					selectionContainsGroups		= false;
-	private boolean					selectionContainsPlaying	= false;
-	private boolean					selectionContainsPausing	= false;
-	private final List				collSelectedNodes			= new ArrayList();
+	protected boolean				selectionContainsSynths		= false;
+	protected boolean				selectionContainsGroups		= false;
+	protected boolean				selectionContainsPlaying	= false;
+	protected boolean				selectionContainsPausing	= false;
+	protected final List			collSelectedNodes			= new ArrayList();
 	
-	private actionPauseResumeClass	actionPauseResume			= null;
-	private actionFreeClass			actionFree					= null;
-	private actionFreeAllClass		actionFreeAll				= null;
-	private actionDeepFreeClass		actionDeepFree				= null;
-	private actionTraceClass		actionTrace					= null;
+	private ActionPauseResume	actionPauseResume			= null;
+	private ActionFree			actionFree					= null;
+	private ActionFreeAll		actionFreeAll				= null;
+	private ActionDeepFree		actionDeepFree				= null;
+	private ActionTrace		actionTrace					= null;
 
 	/**
 	 *	Creates a new <code>NodeTreePanel</code> for a given node watcher
@@ -133,8 +135,9 @@ implements TreeSelectionListener, TreeModelListener
 		ggTree.addTreeSelectionListener( this );
 		ntm.getModel().addTreeModelListener( this );
 						
-		final JScrollPane ggScroll = new JScrollPane( ggTree, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-															  JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
+		final JScrollPane ggScroll = new JScrollPane( ggTree,
+					ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+					ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER );
 
 		add( ggScroll, BorderLayout.CENTER );
 		if( (flags & BUTTONS) != 0 ) {
@@ -161,23 +164,23 @@ implements TreeSelectionListener, TreeModelListener
 		AbstractButton	but;
 	
 		tb.setFloatable( false );
-		actionPauseResume	= new actionPauseResumeClass();
+		actionPauseResume	= new ActionPauseResume();
 		but					= new JButton( actionPauseResume );
 //		but.setFont( fntGUI );
 		tb.add( but );
-		actionFree			= new actionFreeClass();
+		actionFree			= new ActionFree();
 		but					= new JButton( actionFree );
 //		but.setFont( fntGUI );
 		tb.add( but );
-		actionFreeAll		= new actionFreeAllClass();
+		actionFreeAll		= new ActionFreeAll();
 		but					= new JButton( actionFreeAll );
 //		but.setFont( fntGUI );
 		tb.add( but );
-		actionDeepFree		= new actionDeepFreeClass();
+		actionDeepFree		= new ActionDeepFree();
 		but					= new JButton( actionDeepFree );
 //		but.setFont( fntGUI );
 		tb.add( but );
-		actionTrace			= new actionTraceClass();
+		actionTrace			= new ActionTrace();
 		but					= new JButton( actionTrace );
 //		but.setFont( fntGUI );
 		tb.add( but );
@@ -214,7 +217,7 @@ implements TreeSelectionListener, TreeModelListener
 											  rootNode.toString() );
 		final Container		cp	= f.getContentPane();
 		
-		f.setDefaultCloseOperation( JFrame.DO_NOTHING_ON_CLOSE );
+		f.setDefaultCloseOperation( WindowConstants.DO_NOTHING_ON_CLOSE );
 		f.addWindowListener( new WindowAdapter() {
 			public void windowClosed( WindowEvent e )
 			{
@@ -356,7 +359,7 @@ implements TreeSelectionListener, TreeModelListener
 		protected abstract void update();
 	}
 
-	private class actionPauseResumeClass
+	private class ActionPauseResume
 	extends NodeAction
 	{
 		private static final String	NAME_PAUSE	= "Pause";
@@ -364,7 +367,7 @@ implements TreeSelectionListener, TreeModelListener
 	
 		private boolean runFlag	= false;
 	
-		private actionPauseResumeClass()
+		protected ActionPauseResume()
 		{
 			super( NAME_PAUSE );
 			setEnabled( false );
@@ -384,10 +387,10 @@ implements TreeSelectionListener, TreeModelListener
 		}
 	}
 
-	private class actionFreeClass
+	private class ActionFree
 	extends NodeAction
 	{
-		private actionFreeClass()
+		protected ActionFree()
 		{
 			super( "Free" );
 			setEnabled( false );
@@ -404,10 +407,10 @@ implements TreeSelectionListener, TreeModelListener
 		}
 	}
 
-	private class actionFreeAllClass
+	private class ActionFreeAll
 	extends NodeAction
 	{
-		private actionFreeAllClass()
+		protected ActionFreeAll()
 		{
 			super( "Free All" );
 			setEnabled( false );
@@ -428,10 +431,10 @@ implements TreeSelectionListener, TreeModelListener
 		}
 	}
 
-	private class actionDeepFreeClass
+	private class ActionDeepFree
 	extends NodeAction
 	{
-		private actionDeepFreeClass()
+		protected ActionDeepFree()
 		{
 			super( "Deep Free" );
 			setEnabled( false );
@@ -452,10 +455,10 @@ implements TreeSelectionListener, TreeModelListener
 		}
 	}
 
-	private class actionTraceClass
+	private class ActionTrace
 	extends NodeAction
 	{
-		private actionTraceClass()
+		protected ActionTrace()
 		{
 			super( "Trace" );
 			setEnabled( false );
@@ -481,7 +484,7 @@ implements TreeSelectionListener, TreeModelListener
 		private static final Color	colrPausing	= new Color( 0x90, 0x90, 0x90 );
 		private static final Color	colrDied	= new Color( 0x90, 0x00, 0x30 );
 	
-		private TreeNodeRenderer()
+		protected TreeNodeRenderer()
 		{
 			super();
 		}

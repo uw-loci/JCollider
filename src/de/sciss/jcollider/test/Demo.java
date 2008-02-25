@@ -14,16 +14,41 @@
 
 package de.sciss.jcollider.test;
 
-import java.awt.*;
-import java.awt.datatransfer.*;
-import java.awt.event.*;
-import java.io.*;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.table.*;
+import java.awt.BorderLayout;
+import java.awt.Container;
+import java.awt.Font;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
-//import net.roydesign.mac.MRJAdapter;
+import javax.swing.AbstractAction;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
+import javax.swing.TransferHandler;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.AbstractTableModel;
 
 import de.sciss.jcollider.*;
 import de.sciss.jcollider.gui.*;
@@ -58,7 +83,7 @@ import de.sciss.jcollider.gui.*;
  *	def to the system console. A tree view of the node graph
  *	can be created.
  *
- *	@version	0.31, 08-Oct-07
+ *	@version	0.32, 25-Feb-08
  *	@author		Hanns Holger Rutz
  *
  *	@todo		the demo and the NodeWatcher get irritated if
@@ -77,18 +102,18 @@ implements FileFilter, ServerListener, Constants
 {
 	public static Font	fntGUI	= ServerPanel.fntGUI;
 
-	private final SynthDefTable[] defTables;
-	private SynthDefTable selectedTable	= null;
+	protected final SynthDefTable[] defTables;
+	protected SynthDefTable selectedTable	= null;
 	
-	private static final Comparator synthDefNameComp = new SynthDefNameComp();
+	protected static final Comparator synthDefNameComp = new SynthDefNameComp();
 	
-	private Server		server	= null;
-	private NodeWatcher	nw		= null;
-	private Group		grpAll;
+	protected Server		server	= null;
+	protected NodeWatcher	nw		= null;
+	protected Group			grpAll;
 	
 	private static final String[] tableNames = { "JCollider", "Drop Zone" };
 
-	private final Demo enc_this	= this;
+	protected final Demo enc_this	= this;
 	
 	public Demo()
 	{
@@ -159,7 +184,7 @@ implements FileFilter, ServerListener, Constants
 				server.start();
 				server.startAliveThread();
 			}
-			catch( IOException e1 ) {}
+			catch( IOException e1 ) { /* ignored */ }
 //			if( server.isRunning() ) initServer();
 			spf = ServerPanel.makeWindow( server, ServerPanel.MIMIC | ServerPanel.CONSOLE | ServerPanel.DUMP );
 		}
@@ -206,7 +231,7 @@ implements FileFilter, ServerListener, Constants
 //	{
 //		final File[]			defFiles	= new File( "synthdefs" ).listFiles( this );
 //		SynthDef[]				defs;
-//		final java.util.List	collDefs	= new ArrayList();
+//		final List	collDefs	= new ArrayList();
 //	
 //		for( int i = 0; i < defFiles.length; i++ ) {
 //			try {
@@ -230,22 +255,22 @@ implements FileFilter, ServerListener, Constants
 		final Box	b	= Box.createHorizontalBox();
 		JButton		but;
 		
-		but	= new JButton( new actionPlayClass() );
+		but	= new JButton( new ActionPlay() );
 		but.setToolTipText( "Play Selected SynthDef" );
 		b.add( but );
-		but = new JButton( new actionStopClass() );
+		but = new JButton( new ActionStop() );
 		but.setToolTipText( "Stop All Synths" );
 		b.add( but );
-		but = new JButton( new actionDiagramClass() );
+		but = new JButton( new ActionDiagram() );
 		but.setToolTipText( "Open Diagram For Selected SynthDef" );
 		b.add( but );
-		but = new JButton( new actionDumpClass() );
+		but = new JButton( new ActionDump() );
 		but.setToolTipText( "Dump Selected SynthDef To The System Console" );
 		b.add( but );
-		but = new JButton( new actionSynthDefApiExClass() );
+		but = new JButton( new ActionSynthDefApiEx() );
 		but.setToolTipText( "Demo code from SynthDef API doc" );
 		b.add( but );
-		but = new JButton( new actionNodeTreeClass() );
+		but = new JButton( new ActionNodeTree() );
 		but.setToolTipText( "View a Tree of all Nodes" );
 		b.add( but );
 		
@@ -258,7 +283,7 @@ implements FileFilter, ServerListener, Constants
 //			UGenInfo.readDefinitions();
 			UGenInfo.readBinaryDefinitions();
 
-			final java.util.List collDefs = DemoDefs.create();
+			final List collDefs = DemoDefs.create();
 			Collections.sort( collDefs, synthDefNameComp );
 //			defTables[ 1 ].addDefs( collDefs );
 			defTables[ 0 ].addDefs( collDefs );
@@ -287,7 +312,7 @@ implements FileFilter, ServerListener, Constants
 
 	private void sendDefs()
 	{
-		java.util.List	defs;
+		List	defs;
 		SynthDef		def;
 	
 		for( int i = 0; i < defTables.length; i++ ) {
@@ -326,7 +351,7 @@ implements FileFilter, ServerListener, Constants
 		});
 	}
 
-	private static void reportError( Exception e ) {
+	protected static void reportError( Exception e ) {
 		System.err.println( e.getClass().getName() + " : " + e.getLocalizedMessage() );
 	}
 
@@ -385,7 +410,7 @@ implements FileFilter, ServerListener, Constants
 	{
 		private final SynthDefTableModel tm;
 	
-		private SynthDefTable( String name )
+		protected SynthDefTable( String name )
 		{
 			super();
 			tm = new SynthDefTableModel( name );
@@ -399,19 +424,19 @@ implements FileFilter, ServerListener, Constants
 //			tm.addDef( def );
 //		}
 
-		private void addDefs( java.util.List defs )
+		protected void addDefs( List defs )
 		{
 			tm.addDefs( defs );
 		}
 		
-		private SynthDef getSelectedDef()
+		protected SynthDef getSelectedDef()
 		{
 			final int row = getSelectedRow();
 			if( row >= 0 ) return tm.getDef( row );
 			else return null;
 		}
 
-		private java.util.List getDefs()
+		protected List getDefs()
 		{
 			return tm.getDefs();
 		}
@@ -420,10 +445,10 @@ implements FileFilter, ServerListener, Constants
 	private static class SynthDefTableModel
 	extends AbstractTableModel
 	{
-		private final java.util.List collDefs = new ArrayList();
+		private final List collDefs = new ArrayList();
 		private final String name;
 
-		private SynthDefTableModel( String name )
+		protected SynthDefTableModel( String name )
 		{
 			super();
 			this.name = name;
@@ -459,7 +484,7 @@ implements FileFilter, ServerListener, Constants
 //			fireTableRowsInserted( collDefs.size() - 1, collDefs.size() - 1 );
 //		}
 
-		private void addDefs( java.util.List defs )
+		protected void addDefs( List defs )
 		{
 			if( defs.isEmpty() ) return;
 		
@@ -468,7 +493,7 @@ implements FileFilter, ServerListener, Constants
 			fireTableRowsInserted( startRow, collDefs.size() - 1 );
 		}
 
-		private SynthDef getDef( int idx )
+		protected SynthDef getDef( int idx )
 		{
 			return (SynthDef) collDefs.get( idx );
 		}
@@ -478,16 +503,16 @@ implements FileFilter, ServerListener, Constants
 //			return collDefs.size();
 //		}
 
-		private java.util.List getDefs()
+		protected List getDefs()
 		{
 			return new ArrayList( collDefs );
 		}
 	}
 	
-	private class actionPlayClass
+	private class ActionPlay
 	extends AbstractAction
 	{
-		private actionPlayClass()
+		protected ActionPlay()
 		{
 			super( "Play" );			
 		}
@@ -512,10 +537,10 @@ implements FileFilter, ServerListener, Constants
 		}
 	}
 
-	private class actionStopClass
+	private class ActionStop
 	extends AbstractAction
 	{
-		private actionStopClass()
+		protected ActionStop()
 		{
 			super( "Stop All" );
 		}
@@ -538,7 +563,7 @@ implements FileFilter, ServerListener, Constants
 	{
 		int idx;
 	
-		private TableSelListener( int idx )
+		protected TableSelListener( int idx )
 		{
 			this.idx	= idx;
 		}
@@ -556,10 +581,10 @@ implements FileFilter, ServerListener, Constants
 		}
 	}
 
-	private class actionDiagramClass
+	private class ActionDiagram
 	extends AbstractAction
 	{
-		private actionDiagramClass()
+		protected ActionDiagram()
 		{
 			super( "Def Diagram" );			
 		}
@@ -575,10 +600,10 @@ implements FileFilter, ServerListener, Constants
 		}
 	}
 	
-	private class actionDumpClass
+	private class ActionDump
 	extends AbstractAction
 	{
-		private actionDumpClass()
+		protected ActionDump()
 		{
 			super( "Def Dump" );			
 		}
@@ -594,10 +619,10 @@ implements FileFilter, ServerListener, Constants
 		}
 	}
 
-	private class actionSynthDefApiExClass
+	private class ActionSynthDefApiEx
 	extends AbstractAction
 	{
-		private actionSynthDefApiExClass()
+		protected ActionSynthDefApiEx()
 		{
 			super( "API Ex" );			
 		}
@@ -608,10 +633,10 @@ implements FileFilter, ServerListener, Constants
 		}
 	}
 
-	private class actionNodeTreeClass
+	private class ActionNodeTree
 	extends AbstractAction
 	{
-		private actionNodeTreeClass()
+		protected ActionNodeTree()
 		{
 			super( "Node Tree" );			
 		}
@@ -637,6 +662,8 @@ implements FileFilter, ServerListener, Constants
 	private static class SynthDefNameComp
 	implements Comparator
 	{
+		protected SynthDefNameComp() { /* empty */ }
+		
 		public int compare( Object def1, Object def2 )
 		{
 			return( ((SynthDef) def1).getName().compareTo( ((SynthDef) def2).getName() ));
@@ -648,7 +675,7 @@ implements FileFilter, ServerListener, Constants
 	{
 		private final int idx;
 	
-		private SynthDefFileTransferHandler( int idx )
+		protected SynthDefFileTransferHandler( int idx )
 		{
 			this.idx = idx;
 		}
@@ -659,16 +686,16 @@ implements FileFilter, ServerListener, Constants
 		public boolean importData( JComponent c, Transferable t )
 		{
 			final Object			o;
-			final java.util.List	fileList;
-			final java.util.List	collDefs;
+			final List				fileList;
+			final List				collDefs;
 			File					f;
 			SynthDef[]				defs;
 		
 			try {
 				if( t.isDataFlavorSupported( DataFlavor.javaFileListFlavor )) {
 					o =  t.getTransferData( DataFlavor.javaFileListFlavor );
-					if( o instanceof java.util.List ) {
-						fileList	= (java.util.List) o;
+					if( o instanceof List ) {
+						fileList	= (List) o;
 						collDefs	= new ArrayList();
 						for( int i = 0; i < fileList.size(); i++ ) {
 							f = (File) fileList.get( i );
@@ -694,7 +721,7 @@ implements FileFilter, ServerListener, Constants
 					}
 				}
 			}
-			catch( UnsupportedFlavorException e1 ) {}
+			catch( UnsupportedFlavorException e1 ) { /* ignored */ }
 			catch( IOException e2 ) {
 				JCollider.displayError( enc_this, e2, "Drop File" );
 			}

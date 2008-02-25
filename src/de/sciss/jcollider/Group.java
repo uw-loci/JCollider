@@ -57,7 +57,7 @@ import de.sciss.net.OSCMessage;
  *				is instantiation, new- and free-messages
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.23, 02-Oct-05
+ *  @version	0.32, 25-Feb-08
  */
 public class Group
 extends Node
@@ -318,7 +318,7 @@ extends Node
 	{
 		private Node nextElement;
 	
-		private ChildEnumeration( Group g )
+		protected ChildEnumeration( Group g )
 		{
 			nextElement = g.getHeadNode();
 		}

@@ -46,6 +46,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JSlider;
+import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -54,20 +55,20 @@ import javax.swing.event.ChangeListener;
  *	horizontal slider, number box and label.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.31, 08-Oct-07
+ *  @version	0.32, 25-Feb-08
  */
 public class EZSlider
 extends JComponent
 {
 	private final Object		sync			= new Object();
 	private ActionListener		actionListener	= null;
-	private ControlSpec			spec;
+	protected ControlSpec		spec;
 	
-	private double				value			= 0.0;
+	protected double			value			= 0.0;
 	
 	private final JLabel		ggLabel;
-	private final JSlider		ggSlider;
-	private final NumberField	ggNumber;
+	protected final JSlider		ggSlider;
+	protected final NumberField	ggNumber;
 	private final JLabel		ggUnits;
 	 
 	public EZSlider()
@@ -84,7 +85,7 @@ extends JComponent
 		con.insets		= new Insets( 0, 2, 0, 2 );
 		
 		setLayout( lay );
-		ggLabel			= new JLabel( (String) null, JLabel.RIGHT );
+		ggLabel			= new JLabel( (String) null, SwingConstants.RIGHT );
 		con.weightx		= 0.0;
 		lay.setConstraints( ggLabel, con );
 		add( ggLabel );
@@ -206,7 +207,7 @@ extends JComponent
 		}
      }
 	
-	private void dispatchEvent()
+	protected void dispatchEvent()
 	{
 		final ActionListener l = actionListener;
 		if( l != null ) {

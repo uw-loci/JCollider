@@ -94,7 +94,7 @@ implements EventManager.Processor, OSCListener, Constants, Runnable
 	// no getter method now because we might
 	// allow to use more than one server
 	// in a future version
-	private final Server				server;
+	protected final Server				server;
 	
 	private int							dumpMode		= kDumpOff;
 

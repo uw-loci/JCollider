@@ -69,6 +69,8 @@ public abstract class Warp
 	private static class LinearWarp
 	extends Warp
 	{
+		protected LinearWarp() { /* empty */ }
+		
 		public double map( double value, ControlSpec spec )
 		{
 			return( value * spec.getRange() + spec.getMinVal() );
@@ -90,6 +92,8 @@ public abstract class Warp
 	private static class ExponentialWarp
 	extends Warp
 	{
+		protected ExponentialWarp() { /* empty */ }
+
 		public double map( double value, ControlSpec spec )
 		{
 			return( Math.pow( spec.getRatio(), value ) * spec.getMinVal() );
@@ -106,6 +110,8 @@ public abstract class Warp
 	{
 		private static final double PIH = Math.PI * 0.5;
 	
+		protected SineWarp() { /* empty */ }
+
 		public double map( double value, ControlSpec spec )
 		{
 			return( Math.sin( PIH * value ) * spec.getRange() + spec.getMinVal() );
@@ -128,6 +134,8 @@ public abstract class Warp
 	{
 		private static final double PIH = Math.PI * 0.5;
 	
+		protected CosineWarp() { /* empty */ }
+
 		public double map( double value, ControlSpec spec )
 		{
 			return( (0.5 - Math.cos( Math.PI * value ) * 0.5) * spec.getRange() + spec.getMinVal() );
@@ -152,7 +160,7 @@ public abstract class Warp
 		private final double grow;
 		private final double oneByOneMGrow;
 	
-		private CurveWarp( double curve )
+		protected CurveWarp( double curve )
 		{
 			this.curve		= curve;
 			grow			= Math.exp( curve );

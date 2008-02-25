@@ -96,7 +96,7 @@ import de.sciss.net.OSCListener;
  *						regarded thread safe
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.31, 08-Oct-07
+ *  @version	0.32, 25-Feb-08
  */
 public class Server
 implements Constants, EventManager.Processor
@@ -117,26 +117,26 @@ implements Constants, EventManager.Processor
 	
 	private final boolean					isLocal;
 	private boolean							serverRunning		= false;
-	private boolean							serverBooting		= false;
+	protected boolean						serverBooting		= false;
 	private boolean							notified			= true;
 	
-	private Buffer[]						bufferArray;
-	private OSCResponderNode				bufInfoResponder;
-	private boolean							waitingForBufInfo;
-	private int								waitingBufs;
+	protected Buffer[]						bufferArray;
+	protected OSCResponderNode				bufInfoResponder;
+	protected boolean						waitingForBufInfo;
+	protected int							waitingBufs;
 	
 	private NodeIDAllocator					nodeAllocator;
 	private BlockAllocator					controlBusAllocator, audioBusAllocator, bufferAllocator;
 
 	private static String					program				= "scsynth";
 	private static boolean					inform				= true;
-	private static PrintStream				printStream			= System.err;
+	protected static PrintStream			printStream			= System.err;
 	
-	private static final Timer				appClock			= new Timer();	// nice work-around, eh?
+	protected static final Timer			appClock			= new Timer();	// nice work-around, eh?
 	private StatusWatcher					aliveThread			= null;
 	
 	// OSC communication
-	private final OSCClient					c;
+	protected final OSCClient				c;
 	private final OSCMultiResponder			multi;
 //	private final OSCTransmitter			trns;
 //	private final DatagramChannel			dch;
@@ -145,17 +145,17 @@ implements Constants, EventManager.Processor
 	private final Group						defaultGroup;
 
 	// status watcher
-	private final Status					status				= new Status();
+	protected final Status					status				= new Status();
 
 	// messaging
 	private final EventManager				em					= new EventManager( this );
 	private final List						collBootCompletion	= new ArrayList();
 	
-	private BootThread						bootThread			= null;
+	protected BootThread					bootThread			= null;
 
 	private static final OSCMessage			statusMsg			= new OSCMessage( "/status" );
 
-	private final Server					enc_this			= this;
+	protected final Server					enc_this			= this;
 
 	/**
 	 *	Creates a new <code>Server</code> representation
@@ -483,7 +483,7 @@ implements Constants, EventManager.Processor
 		return serverBooting;
 	}
 
-	private void setBooting( boolean serverBooting )
+	protected void setBooting( boolean serverBooting )
 	{
 		this.serverBooting = serverBooting;
 	}
@@ -513,7 +513,7 @@ implements Constants, EventManager.Processor
 		return serverRunning;
 	}
 
-	private void setRunning( boolean serverRunning )
+	protected void setRunning( boolean serverRunning )
 	{
 //System.err.println( "ici : "+serverRunning );
 		if( this.serverRunning != serverRunning ) {
@@ -667,7 +667,7 @@ implements Constants, EventManager.Processor
 		return defaultGroup;
 	}
 
-	private static void inform( String txt )
+	protected static void inform( String txt )
 	{
 		if( inform ) printStream.println( txt );
 	}
@@ -991,7 +991,7 @@ implements Constants, EventManager.Processor
 		em.removeListener( l );
 	}
 	
-	private void changed( int ID )
+	protected void changed( int ID )
 	{
 		em.dispatchEvent( new ServerEvent( this, ID, System.currentTimeMillis(), this ));
 	}
@@ -1117,7 +1117,7 @@ implements Constants, EventManager.Processor
 //		}
 //	}
 
-	private void status()
+	protected void status()
 	throws IOException
 	{
 		sendMsg( statusMsg );
@@ -1204,7 +1204,7 @@ implements Constants, EventManager.Processor
 				resp.wait( (long) (timeout * 1000) );
 			}
 		}
-		catch( InterruptedException e1 ) {}
+		catch( InterruptedException e1 ) { /* ignored */ }
 		finally {
 			resp.remove();
 		}
@@ -1259,7 +1259,7 @@ implements Constants, EventManager.Processor
 				resp.wait( (long) (timeout * 1000) );
 			}
 		}
-		catch( InterruptedException e1 ) {}
+		catch( InterruptedException e1 ) { /* ignored */ }
 		finally {
 			resp.remove();
 		}
@@ -1519,7 +1519,7 @@ resetBufferAutoInfo();
 						bootThread.wait( 4000 );
 					}
 				}
-				catch( InterruptedException e1 ) {}
+				catch( InterruptedException e1 ) { /* ignored */ }
 			}
 
 			if( !isBooting() && !isRunning() ) return true;
@@ -1559,7 +1559,7 @@ resetBufferAutoInfo();
 		}
 	}
 
-	private static void printError( String name, Throwable t )
+	protected static void printError( String name, Throwable t )
 	{
 //		printStream.println( name + " : " + t.getClass().getName() + " : " + t.getLocalizedMessage() );
 		printStream.print( name + " : " );
@@ -1611,12 +1611,12 @@ resetBufferAutoInfo();
 	{
 		private final String[]	cmdArray;
 //		private final String[]	envArray;
-		private boolean			keepScRunning	= true;
+		protected boolean		keepScRunning	= true;
 		private final Server	server;
 		private final boolean	startAliveThread;
 	
 //		private BootThread( Server server, String[] cmdArray, Map envMap, boolean startAliveThread )
-		private BootThread( Server server, String[] cmdArray, boolean startAliveThread )
+		protected BootThread( Server server, String[] cmdArray, boolean startAliveThread )
 		{
 			super( server.getName() );
 		
@@ -1679,7 +1679,7 @@ resetBufferAutoInfo();
 					try {
 						Thread.sleep( 500 );   // a kind of cheesy way to wait for the program to end
 					}
-					catch( InterruptedException e5 ) {}
+					catch( InterruptedException e5 ) { /* ignored */ }
 
 					handleConsole( inStream, inBuf );
 					handleConsole( errStream, errBuf );
@@ -1690,7 +1690,7 @@ resetBufferAutoInfo();
 						printStream.println( "scsynth terminated (" + resultCode +")" );
 					}
 					// gets thrown if we call exitValue() while sc still running
-					catch( IllegalThreadStateException e1 ) {}
+					catch( IllegalThreadStateException e1 ) { /* ignored */ }
 				} // while( keepScRunning && pRunning )
 			}
 			catch( IOException e3 ) {
@@ -1729,7 +1729,7 @@ resetBufferAutoInfo();
 					printStream.write( buf, 0, i );
 				}
 			}
-			catch( IOException e1 ) {}	// ignore for now XXX
+			catch( IOException e1 ) { /* ignored XXX */ }
 		}
 	}
 
@@ -1751,7 +1751,7 @@ resetBufferAutoInfo();
 		public double	sampleRate;
 		public double	actualSampleRate;
 		
-		private static Status copyFrom( Status s )
+		protected static Status copyFrom( Status s )
 		{
 			final Status result			= new Status();
 			synchronized( s ) {
@@ -1783,7 +1783,7 @@ resetBufferAutoInfo();
 //			this( delay, period, 4 );
 //		}
 //
-		private StatusWatcher( float delay, float period, int deathBounces )
+		protected StatusWatcher( float delay, float period, int deathBounces )
 		{
 			delayMillis			= (long) (delay * 1000);
 			periodMillis		= (long) (period * 1000);
@@ -1791,7 +1791,7 @@ resetBufferAutoInfo();
 			this.deathBounces	= deathBounces;
 		}
 		
-		private void start()
+		protected void start()
 		throws IOException
 		{
 //System.err.println( "start" );
@@ -1800,7 +1800,7 @@ resetBufferAutoInfo();
 			appClock.schedule( this, delayMillis, periodMillis );
 		}
 
-		private void stop()
+		protected void stop()
 		throws IOException
 		{
 //System.err.println( "stop" );
@@ -1872,7 +1872,7 @@ resetBufferAutoInfo();
 	implements OSCListener
 	{
 //		private boolean					done	= false;
-		private OSCMessage				doneMsg	= null;
+		protected OSCMessage			doneMsg	= null;
 		private final OSCResponderNode	resp1;
 		private final OSCResponderNode	resp2;
 		private final int				argIdx;
@@ -1887,7 +1887,7 @@ resetBufferAutoInfo();
 //			resp2			= null;
 //		}
 
-		private SyncResponder( String doneCmdName, String failCmdName, int argIdx, Object argMatch )
+		protected SyncResponder( String doneCmdName, String failCmdName, int argIdx, Object argMatch )
 		throws IOException
 		{
 			this.argIdx		= argIdx;
@@ -1896,14 +1896,14 @@ resetBufferAutoInfo();
 			resp2			= failCmdName == null ? null : new OSCResponderNode( enc_this, failCmdName, this );
 		}
 		
-		private void add()
+		protected void add()
 		throws IOException
 		{
 			resp1.add();
 			if( resp2 != null ) resp2.add();
 		}
 
-		private void remove()
+		protected void remove()
 		{
 			try {
 				resp1.remove();

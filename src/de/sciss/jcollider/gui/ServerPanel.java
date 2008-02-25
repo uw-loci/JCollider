@@ -63,6 +63,8 @@ import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
 
 import de.sciss.jcollider.Constants;
 import de.sciss.jcollider.JCollider;
@@ -79,7 +81,7 @@ import de.sciss.jcollider.ServerListener;
  *	the local server.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.31, 08-Oct-07
+ *  @version	0.32, 25-Feb-08
  */
 public class ServerPanel
 extends JPanel
@@ -137,15 +139,15 @@ implements ServerListener, Constants
 	 *	Constructor flag: shortcut for creating
 	 *	those GUI elements that SClang provides.
 	 */
-	public static final int MIMIC		=	0x7E;
+	public static final int 	MIMIC		=	0x7E;
 
-	private static final int BUTTONS	=	0xBE;
+	private static final int 	BUTTONS		=	0xBE;
 
-	private final Server		server;
-	private final ServerPanel	enc_this	= this;
+	protected final Server		server;
+	protected final ServerPanel	enc_this	= this;
 	
-	private JTextField		lbBigName		= null;
-	private actionBootClass	actionBoot		= null;
+	private JTextField			lbBigName	= null;
+	private ActionBoot			actionBoot	= null;
 	
 	private JFrame				ourFrame;
 	private JScrollPane			ggScroll;
@@ -272,17 +274,17 @@ implements ServerListener, Constants
 		lbCntGroups		= new JLabel();
 		lbCntSynthDefs	= new JLabel();
 		
-		p.add( new JLabel( JCollider.getResourceString( "countsAvgCPU" ) + " : ", JLabel.RIGHT ));
+		p.add( new JLabel( JCollider.getResourceString( "countsAvgCPU" ) + " : ", SwingConstants.RIGHT ));
 		p.add( lbCntAvgCPU );
-		p.add( new JLabel( JCollider.getResourceString( "countsPeakCPU" ) + " : ", JLabel.RIGHT ));
+		p.add( new JLabel( JCollider.getResourceString( "countsPeakCPU" ) + " : ", SwingConstants.RIGHT ));
 		p.add( lbCntPeakCPU );
-		p.add( new JLabel( JCollider.getResourceString( "countsUGens" ) + " : ", JLabel.RIGHT ));
+		p.add( new JLabel( JCollider.getResourceString( "countsUGens" ) + " : ", SwingConstants.RIGHT ));
 		p.add( lbCntUGens );
-		p.add( new JLabel( JCollider.getResourceString( "countsSynths" ) + " : ", JLabel.RIGHT ));
+		p.add( new JLabel( JCollider.getResourceString( "countsSynths" ) + " : ", SwingConstants.RIGHT ));
 		p.add( lbCntSynths );
-		p.add( new JLabel( JCollider.getResourceString( "countsGroups" ) + " : ", JLabel.RIGHT ));
+		p.add( new JLabel( JCollider.getResourceString( "countsGroups" ) + " : ", SwingConstants.RIGHT ));
 		p.add( lbCntGroups );
-		p.add( new JLabel( JCollider.getResourceString( "countsSynthDefs" ) + " : ", JLabel.RIGHT ));
+		p.add( new JLabel( JCollider.getResourceString( "countsSynthDefs" ) + " : ", SwingConstants.RIGHT ));
 		p.add( lbCntSynthDefs );
 		
 		p.setBorder( BorderFactory.createEmptyBorder( 2, 8, 8, 8 ));
@@ -304,7 +306,7 @@ Insets insets;
 		tb.setFloatable( false );
 	
 		if( (flags & BOOTQUIT) != 0 ) {
-			actionBoot	= new actionBootClass();
+			actionBoot	= new ActionBoot();
 			but			= new JButton( actionBoot );
 			but.setFont( fntGUI );
 //			b.add( but );
@@ -320,7 +322,7 @@ but.setMargin( new Insets( insets.top + 2, insets.left + 4, insets.bottom + 2, i
 			lbBigName.setEditable( false );
 			lbBigName.setBorder( BorderFactory.createEmptyBorder( 2, 4, 2, 4 ));
 			lbBigName.setBackground( Color.black );
-			lbBigName.setHorizontalAlignment( JLabel.CENTER );
+			lbBigName.setHorizontalAlignment( SwingConstants.CENTER );
 			updateBigName();
 //			b.add( lbBigName );
 			tb.add( lbBigName );
@@ -329,7 +331,7 @@ but.setMargin( new Insets( insets.top + 2, insets.left + 4, insets.bottom + 2, i
 //			b.add( new JButton( new actionMakeDefaultClass() ));
 //		}
 		if( (flags & DUMP) != 0 ) {
-			but = new JToggleButton( new actionDumpClass() );
+			but = new JToggleButton( new ActionDump() );
 			but.setFont( fntGUI );
 insets = but.getMargin();
 but.setMargin( new Insets( insets.top + 2, insets.left + 4, insets.bottom + 2, insets.right + 4 ));
@@ -343,7 +345,7 @@ but.setMargin( new Insets( insets.top + 2, insets.left + 4, insets.bottom + 2, i
 		return tb;
 	}
 	
-	private void updateBigName()
+	protected void updateBigName()
 	{
 		if( lbBigName == null ) return;
 	
@@ -381,7 +383,7 @@ but.setMargin( new Insets( insets.top + 2, insets.left + 4, insets.bottom + 2, i
 		}
 	}
 	
-	private void showHideConsole( boolean show )
+	protected void showHideConsole( boolean show )
 	{
 //		if( (ourFrame == null) || (showHideTimer == null) || (this.showHide == show) ) return;
 		if( (ourFrame == null) || (this.showHide == show) ) return;
@@ -433,7 +435,7 @@ but.setMargin( new Insets( insets.top + 2, insets.left + 4, insets.bottom + 2, i
 		sp.ourFrame = f;
 		if( sp.ggScroll != null ) sp.ggScroll.setVisible( false );
 		
-		f.setDefaultCloseOperation( JFrame.DO_NOTHING_ON_CLOSE );
+		f.setDefaultCloseOperation( WindowConstants.DO_NOTHING_ON_CLOSE );
 		cp.setLayout( new BorderLayout() );
 		cp.add( sp, BorderLayout.CENTER );
 		f.pack();
@@ -480,12 +482,12 @@ but.setMargin( new Insets( insets.top + 2, insets.left + 4, insets.bottom + 2, i
 
 // -------------- internal classes --------------
 
-	private class actionBootClass
+	private class ActionBoot
 	extends AbstractAction
 	{
 		private boolean booted;
 	
-		private actionBootClass()
+		protected ActionBoot()
 		{
 			super( JCollider.getResourceString( "buttonBoot" ));
 			
@@ -508,26 +510,26 @@ but.setMargin( new Insets( insets.top + 2, insets.left + 4, insets.bottom + 2, i
 			}
 		}
 		
-		private void terminated()
+		protected void terminated()
 		{
 			booted = false;
 			putValue( NAME, JCollider.getResourceString( "buttonBoot" ));
 			showHideConsole( false );
 		}
 
-		private void booted()
+		protected void booted()
 		{
 			booted = true;
 			putValue( NAME, JCollider.getResourceString( "buttonQuit" ));
 		}
 	} // class actionBootClass
 
-	private class actionDumpClass
+	private class ActionDump
 	extends AbstractAction
 	{
 		private boolean dumping;
 	
-		private actionDumpClass()
+		protected ActionDump()
 		{
 			super( JCollider.getResourceString( "buttonDumpOSC" ));
 			

@@ -101,7 +101,8 @@ import de.sciss.jcollider.UGenInput;
  *	be dragged around. Double clicking on a
  *	UGen will reveal the names of its inlets.
  *
- *	@version	0.31, 08-Oct-07
+ *	@version	0.32, 25-Feb-08
+ *	@author		Hanns Holger Rutz
  */
 public class SynthDefDiagram
 extends JFrame
@@ -112,7 +113,7 @@ extends JFrame
 		"800%", "400%", "200%", "150%", "125%", "100%", "75%", "50%", "25%", "12.5%"
 	};
 	
-	private static final NumberFormat frmtZoom	= NumberFormat.getPercentInstance( Locale.US );
+	protected static final NumberFormat frmtZoom	= NumberFormat.getPercentInstance( Locale.US );
 
 	/**
 	 *	Creates a new frame displaying
@@ -146,7 +147,7 @@ extends JFrame
 				try {
 					num = frmtZoom.parse( text );
 				}
-				catch( ParseException e1 ) {}
+				catch( ParseException e1 ) { /* ignored */ }
 
 				if( num != null ) {
 					synthDefView.setZoom( num.doubleValue() );
@@ -168,15 +169,15 @@ extends JFrame
 		toFront();
 	}
 	
-	private static String formatConst( float value )
+	protected static String formatConst( float value )
 	{
 		if( value == Math.round( value )) return String.valueOf( Math.round( value ));
 		return frmtConst.format( new Float( value ));
 	}
 
-	private static final Font fntUGen		= new Font( "Lucida Grande", Font.PLAIN, 10 );	// XXX bad for non-macos
-	private static final Font fntToolTip	= new Font( "Gill Sans", Font.ITALIC, 12 );	// XXX bad for non-macos
-	private static final NumberFormat	frmtConst = NumberFormat.getInstance( Locale.US );
+	protected static final Font fntUGen			= new Font( "Lucida Grande", Font.PLAIN, 10 );	// XXX bad for non-macos
+	protected static final Font fntToolTip		= new Font( "Gill Sans", Font.ITALIC, 12 );	// XXX bad for non-macos
+	private static final NumberFormat frmtConst = NumberFormat.getInstance( Locale.US );
 
 	static {
 		frmtConst.setGroupingUsed( false );
@@ -210,7 +211,7 @@ extends JFrame
 		
 		private Rectangle2D	boundingBox		= new Rectangle2D.Double();
 		
-		private SynthDefView( SynthDef def )
+		protected SynthDefView( SynthDef def )
 		{
 			super();
 		
@@ -334,12 +335,12 @@ childLp:		for( int i = 0; i < children.size(); i++ ) {
 			recalc = false;
 		}
 		
-		private double getZoom()
+		protected double getZoom()
 		{
 			return zoom;
 		}
 
-		private void setZoom( double newZoom )
+		protected void setZoom( double newZoom )
 		{
 			zoom = newZoom;
 
@@ -443,7 +444,7 @@ childLp:		for( int i = 0; i < children.size(); i++ ) {
 		
 		private Point2D getVirtualPoint( Point screenPt )
 		{
-			return new Point2D.Double( (double) screenPt.x / zoom, (double) screenPt.y / zoom );
+			return new Point2D.Double( screenPt.x / zoom, screenPt.y / zoom );
 		}
 		
 		public void mousePressed( MouseEvent e )
@@ -552,10 +553,10 @@ childLp:		for( int i = 0; i < children.size(); i++ ) {
 			}
 		}
 
-		public void mouseClicked( MouseEvent e ) {}
-		public void mouseMoved( MouseEvent e ) {}
-		public void mouseEntered( MouseEvent e ) {}
-		public void mouseExited( MouseEvent e ) {}
+		public void mouseClicked( MouseEvent e ) { /* ignored */ }
+		public void mouseMoved( MouseEvent e ) { /* ignored */ }
+		public void mouseEntered( MouseEvent e ) { /* ignored */ }
+		public void mouseExited( MouseEvent e ) { /* ignored */ }
 	}
 	
 	private static class Wire
@@ -573,7 +574,7 @@ childLp:		for( int i = 0; i < children.size(); i++ ) {
 		private final UGenView	outputUGen, inputUGen;
 		private final int		outputIndex, inputIndex;
 	
-		private Wire( UGenView outputUGen, int outputIndex, UGenView inputUGen, int inputIndex )
+		protected Wire( UGenView outputUGen, int outputIndex, UGenView inputUGen, int inputIndex )
 		{
 			this.outputUGen		= outputUGen;
 			this.inputUGen		= inputUGen;
@@ -601,13 +602,13 @@ childLp:		for( int i = 0; i < children.size(); i++ ) {
 			recalcPositions();
 		}
 		
-		private void recalcPositions()
+		protected void recalcPositions()
 		{
 			shpWire	= new Line2D.Double( outputUGen.getOutletLocation( outputIndex ),
 										 inputUGen.getInletLocation( inputIndex ));
 		}
 
-		private void paint( Graphics2D g2 )
+		protected void paint( Graphics2D g2 )
 		{
 			final Stroke			strkOrig	= g2.getStroke();
 //			final AffineTransform	atOrig		= g2.getTransform();
@@ -670,8 +671,8 @@ childLp:		for( int i = 0; i < children.size(); i++ ) {
 		
 		private static final double minus90 = -Math.PI / 2;
 
-		private UGenView( UGen ugen, UGenInfo ui, String name,
-						  Rectangle2D bounds, FontMetrics fm, FontMetrics fm2 )
+		protected UGenView( UGen ugen, UGenInfo ui, String name,
+						   	Rectangle2D bounds, FontMetrics fm, FontMetrics fm2 )
 		{
 			this.ugen		= ugen;
 //			this.ui			= ui;
@@ -787,42 +788,42 @@ childLp:		for( int i = 0; i < children.size(); i++ ) {
 //			System.err.println( "# consts : " +collConsts.size() );
 		}
 		
-		private void setSelected( boolean selected )
+		protected void setSelected( boolean selected )
 		{
 			this.selected = selected;
 		}
 
-		private boolean isSelected()
+		protected boolean isSelected()
 		{
 			return selected;
 		}
 		
-		private void showToolTips( boolean yesNo )
+		protected void showToolTips( boolean yesNo )
 		{
 			this.toolTips	= yesNo;
 		}
 
-		private boolean isShowingToolTips()
+		protected boolean isShowingToolTips()
 		{
 			return toolTips;
 		}
 		
-		private Point2D getLocation()
+		protected Point2D getLocation()
 		{
 			return new Point2D.Double( bounds.getX(), bounds.getY() );
 		}
 		
-		private Rectangle2D getContainer()
+		protected Rectangle2D getContainer()
 		{
 			return bounds.getBounds2D();	// a copy (?)
 		}
 
-		private boolean contains( Point2D pt )
+		protected boolean contains( Point2D pt )
 		{
 			return bounds.contains( pt );
 		}
 		
-		private void setLocation( Point2D topLeft )
+		protected void setLocation( Point2D topLeft )
 		{
 			bounds.setFrame( topLeft.getX(), topLeft.getY(), bounds.getWidth(), bounds.getHeight() );
 			for( int i = 0; i < inletWires.size(); i++ ) {
@@ -833,7 +834,7 @@ childLp:		for( int i = 0; i < children.size(); i++ ) {
 			}
 		}
 		
-		private List getConstBounds()
+		protected List getConstBounds()
 		{
 			final List result = new ArrayList( collConstBounds.size() );
 			
@@ -848,7 +849,7 @@ childLp:		for( int i = 0; i < children.size(); i++ ) {
 			return result;
 		}
 		
-		private Rectangle2D getBoundingBox()
+		protected Rectangle2D getBoundingBox()
 		{
 			final Rectangle2D		result		= getContainer();
 			final List				constBounds = getConstBounds();
@@ -860,34 +861,34 @@ childLp:		for( int i = 0; i < children.size(); i++ ) {
 			return result;
 		}
 		
-		private void addInletWire( Wire wire )
+		protected void addInletWire( Wire wire )
 		{
 			inletWires.add( wire );
 		}
 
-		private void addOutletWire( Wire wire )
+		protected void addOutletWire( Wire wire )
 		{
 			outletWires.add( wire );
 		}
 		
-		private UGen getUGen()
+		protected UGen getUGen()
 		{
 			return ugen;
 		}
 
-		private Point2D getInletLocation( int index )
+		protected Point2D getInletLocation( int index )
 		{
 			return new Point2D.Double( inletLocations[ index ].getX() + bounds.getX(),
 									   inletLocations[ index ].getY() + bounds.getY() );
 		}
 
-		private Point2D getOutletLocation( int index )
+		protected Point2D getOutletLocation( int index )
 		{
 			return new Point2D.Double( outletLocations[ index ].getX() + bounds.getX(),
 									   outletLocations[ index ].getY() + bounds.getY() );
 		}
 		
-		private void paint( Graphics2D g2, FontMetrics fm, boolean dragging )
+		protected void paint( Graphics2D g2, FontMetrics fm, boolean dragging )
 		{
 			final Stroke			strkOrig	= g2.getStroke();
 			final AffineTransform	atOrig		= g2.getTransform();
@@ -916,7 +917,7 @@ childLp:		for( int i = 0; i < children.size(); i++ ) {
 			g2.setTransform( atOrig );
 		}
 
-		private void paintToolTips( Graphics2D g2, FontMetrics fm )
+		protected void paintToolTips( Graphics2D g2, FontMetrics fm )
 		{
 			final Stroke			strkOrig	= g2.getStroke();
 			final AffineTransform	atOrig		= g2.getTransform();
@@ -944,10 +945,10 @@ childLp:		for( int i = 0; i < children.size(); i++ ) {
 	
 	private static class PositionedString
 	{
-		private final String	str;
-		private final double	x, y;
+		protected final String	str;
+		protected final double	x, y;
 		
-		private PositionedString( String str, double x, double y )
+		protected PositionedString( String str, double x, double y )
 		{
 			this.str	= str;
 			this.x		= x;

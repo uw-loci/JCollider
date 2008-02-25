@@ -50,7 +50,7 @@ import java.util.List;
  *			coexist on the same server.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.31, 08-Oct-07
+ *  @version	0.32, 25-Feb-08
  */
 public class PowerOfTwoAllocator
 implements BlockAllocator
@@ -136,13 +136,13 @@ implements BlockAllocator
 	private static class Block
 	implements BlockAllocator.Block
 	{
-		private final int	address;
+		protected final int	address;
 		private final int	size;
-		private final int	sizeClass;
+		protected final int	sizeClass;
 
-		private Block	next	= null;
+		protected Block	next	= null;
 		
-		private Block( int address, int size, int sizeClass )
+		protected Block( int address, int size, int sizeClass )
 		{
 			this.address	= address;
 			this.size		= size;

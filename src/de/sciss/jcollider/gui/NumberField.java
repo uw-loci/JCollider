@@ -80,7 +80,7 @@ import de.sciss.jcollider.EventManager;
  *  a <code>NumberListener</code>.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.3, 05-May-06
+ *  @version	0.32, 25-Feb-08
  */
 public class NumberField
 extends JFormattedTextField
@@ -101,7 +101,7 @@ implements EventManager.Processor //, PropertyChangeListener
 //	public static final int ENTER_UNFOCUS	=	0x00001;
 
 	private NumberSpace						space;
-	private Number							value;
+	protected Number						value;
 	private NumberFormat					numberFormat;
 // JJJ
 //	private TimeFormat						timeFormat;
@@ -114,11 +114,11 @@ implements EventManager.Processor //, PropertyChangeListener
 // JJJ
 //	private final TimeFormatter				timeFormatter	= new TimeFormatter();
 	
-	private final NumberField				enc_this		= this;
+	protected final NumberField				enc_this		= this;
 	private final AbstractAction			actionLooseFocus;
 
-	private static final DataFlavor			numberFlavor	= new DataFlavor( Number.class, Number.class.getName() );
-	private static final DataFlavor[]		supportedFlavors= { numberFlavor, DataFlavor.stringFlavor };
+	protected static final DataFlavor		numberFlavor	= new DataFlavor( Number.class, Number.class.getName() );
+	protected static final DataFlavor[]		supportedFlavors= { numberFlavor, DataFlavor.stringFlavor };
 
 	/**
 	 *  Create a new <code>NumberField</code> for
@@ -169,7 +169,7 @@ implements EventManager.Processor //, PropertyChangeListener
 			}
 		});
 		
-		actionLooseFocus	= new actionLooseFocusClass();
+		actionLooseFocus	= new ActionLooseFocus();
 		key					= "lost";
 		imap.put( KeyStroke.getKeyStroke( KeyEvent.VK_ESCAPE, 0 ), key );
 		amap.put( key, actionLooseFocus );
@@ -416,9 +416,11 @@ implements EventManager.Processor //, PropertyChangeListener
 
 // ----------- internal action classes -----------
 	
-	private class actionLooseFocusClass
+	private class ActionLooseFocus
 	extends AbstractAction
 	{
+		protected ActionLooseFocus() { /* empty */ }
+		
 		public void actionPerformed( ActionEvent e )
 		{
 			final JRootPane rp = SwingUtilities.getRootPane( enc_this );
@@ -431,7 +433,7 @@ implements EventManager.Processor //, PropertyChangeListener
 	private class NumberTransferHandler
 	extends TransferHandler
 	{
-		private NumberTransferHandler() {}
+		protected NumberTransferHandler() { /* empty */ }
 
 		/**
 		 * Overridden to import a Number or String if it is available.
@@ -453,9 +455,9 @@ implements EventManager.Processor //, PropertyChangeListener
 					return true;
 				}
 			}
-			catch( UnsupportedFlavorException e1 ) {}
-			catch( IOException e2 ) {}
-			catch( ParseException e3 ) {}
+			catch( UnsupportedFlavorException e1 ) { /* ignored */ }
+			catch( IOException e2 ) { /* ignored */ }
+			catch( ParseException e3 ) { /* ignored */ }
 
 			return false;
 		}
@@ -491,7 +493,7 @@ implements EventManager.Processor //, PropertyChangeListener
 		private final Number n;
 		private final JFormattedTextField.AbstractFormatter f;
 		
-		private NumberTransferable( Number n, JFormattedTextField.AbstractFormatter f )
+		protected NumberTransferable( Number n, JFormattedTextField.AbstractFormatter f )
 		{
 			this.n	= n;
 			this.f	= f;

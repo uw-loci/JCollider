@@ -205,7 +205,7 @@ import de.sciss.net.OSCMessage;
  *			makes comparison and debugging a bit tricky
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.27, 24-Feb-06
+ *  @version	0.32, 25-Feb-08
  */
 public class SynthDef
 implements Constants
@@ -1210,12 +1210,12 @@ implements Constants
 
 	private static class UGenEnv
 	{
-		private final UGen				ugen;
-		private final List	collAnte;
-		private final List	collDe;
-		private int						synthIndex;
+		protected final UGen			ugen;
+		protected final List			collAnte;
+		protected final List			collDe;
+		protected int					synthIndex;
 		
-		private UGenEnv( UGen ugen, int synthIndex )
+		protected UGenEnv( UGen ugen, int synthIndex )
 		{
 			this.ugen		= ugen;
 			this.synthIndex	= synthIndex;
@@ -1227,6 +1227,8 @@ implements Constants
 	private static class SynthIndexComparator
 	implements Comparator
 	{
+		protected SynthIndexComparator() { /* empty */ }
+		
 		public int compare( Object env1, Object env2 )
 		{
 			return( ((UGenEnv) env1).synthIndex - ((UGenEnv) env2).synthIndex );

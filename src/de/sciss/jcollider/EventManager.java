@@ -50,7 +50,7 @@ import java.util.ArrayList;
  *  predictable and easily synchronizable.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.14, 06-Aug-05
+ *  @version	0.14, 25-Feb-08
  */
 public class EventManager
 implements Runnable
@@ -68,7 +68,7 @@ implements Runnable
 		this.eventProcessor = eventProcessor;
 	}
 	
-	protected EventManager() {}
+	protected EventManager() { /* empty */ }
 	
 	public void dispose()
 	{
@@ -287,10 +287,10 @@ sync:	synchronized( this ) {
 
 	private class PostponedAction
 	{
-		private final Object   listener;
-		private final boolean  state;
+		protected final Object	listener;
+		protected final boolean	state;
 		
-		private PostponedAction( Object listener, boolean state )
+		protected PostponedAction( Object listener, boolean state )
 		{
 			this.listener   = listener;
 			this.state		= state;
