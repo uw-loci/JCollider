@@ -1,6 +1,6 @@
 /*
  *  BasicEvent.java
- *  JCollider
+ *  de.sciss.app package
  *
  *  Copyright (c) 2004-2008 Hanns Holger Rutz. All rights reserved.
  *
@@ -24,10 +24,10 @@
  *
  *
  *  Changelog:
- *		26-Aug-05	copied from de.sciss.app.BasicEvent
+ *		20-May-05	created from de.sciss.meloncillo.util.BasicEvent
  */
 
-package de.sciss.jcollider;
+package de.sciss.app;
 
 import java.util.EventObject;
 
@@ -38,8 +38,9 @@ import java.util.EventObject;
  *  inherits an event <code>source</code> object.
  *  <p>
  *  The source
- *  is usually the object that caused the event to be dispatched.
- *	This allows objects which both dispatch and receive
+ *  is usually the object that caused the event to be dispatched,
+ *  see the Timeline's setPosition for an example of the source
+ *  usage. This allows objects which both dispatch and receive
  *  events to recognize if the event was fired by themselves,
  *  in which case they might optimize graphical updates or simply
  *  ignore the event, or by other objects.
@@ -52,14 +53,14 @@ import java.util.EventObject;
  *  queue by fusing events of the same type.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.2, 11-Sep-05 (some countries are still at war)
+ *  @version	0.62, 17-Oct-06
  *
  *  @see	EventManager
  */
 public abstract class BasicEvent
 extends EventObject
 {
-	private final int	ID;
+	private final int	id;
 	private final long	when;
 
 	/**
@@ -71,18 +72,18 @@ extends EventObject
 	 *					the superclass and can be queried with <code>getSource()</code>.
 	 *					The <code>source</code> describes the object that
 	 *					originated an action.
-	 *  @param  ID		type of action depending on the concrete
-	 *					subclass. Generally the <code>ID</code> is used to
+	 *  @param  id		type of action depending on the concrete
+	 *					subclass. Generally the <code>id</code> is used to
 	 *					distinguish between different method calls
 	 *					on the registered listeners, hence will be
 	 *					usually ignored by the listeners themselves.
 	 *  @param  when	When the event was generated. See <code>getWhen()</code>.
 	 */
-	public BasicEvent( Object source, int ID, long when )
+	public BasicEvent( Object source, int id, long when )
 	{
 		super( source );
 	
-		this.ID		= ID;
+		this.id		= id;
 		this.when   = when;
 	}
 	
@@ -94,7 +95,7 @@ extends EventObject
 	 */
 	public int getID()
 	{
-		return ID;
+		return id;
 	}
 
 	/**
@@ -114,7 +115,7 @@ extends EventObject
 	 *  described by another (older) event.
 	 *  This method has been created to reduce overhead;
 	 *  when many events are added to the event queue
-	 *  of an <code>EventManager</code>, this allows to fuse two adjectant
+	 *  of an ELM, this allows to fuse two adjectant
 	 *  events. The idea is mainly based on the <code>replaceEdit()</code>
 	 *  method of the <code>javax.swing.undo.UndoableEdit</code>
 	 *  interface; a pendant of a symmetric <code>addEdit()</code>

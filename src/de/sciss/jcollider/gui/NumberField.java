@@ -56,12 +56,8 @@ import javax.swing.TransferHandler;
 import javax.swing.text.DefaultFormatterFactory;
 import javax.swing.text.NumberFormatter;
 
-//import de.sciss.app.BasicEvent;
-//import de.sciss.app.EventManager;
-import de.sciss.jcollider.BasicEvent;
-import de.sciss.jcollider.EventManager;
-
-//import de.sciss.util.NumberSpace;
+import de.sciss.app.BasicEvent;
+import de.sciss.app.EventManager;
 
 /**
  *  A NumberField is basically a <code>JPanel</code>
@@ -80,7 +76,7 @@ import de.sciss.jcollider.EventManager;
  *  a <code>NumberListener</code>.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.32, 25-Feb-08
+ *  @version	0.33, 19-Mar-08
  */
 public class NumberField
 extends JFormattedTextField

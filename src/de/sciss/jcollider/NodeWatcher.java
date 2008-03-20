@@ -52,6 +52,8 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.Timer;
 
+import de.sciss.app.BasicEvent;
+import de.sciss.app.EventManager;
 import de.sciss.net.OSCListener;
 import de.sciss.net.OSCMessage;
 import de.sciss.net.OSCPacket;
@@ -73,7 +75,7 @@ import de.sciss.net.OSCPacket;
  *	use the <code>Node</code>'s <code>TreeNode</code> interface.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.32, 11-Feb-08
+ *  @version	0.33, 19-Mar-08
  *
  *	@synchronization	all methods are thread safe unless explicitely noted
  *						; however you should avoid to register a node at more than

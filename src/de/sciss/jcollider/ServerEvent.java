@@ -36,13 +36,15 @@
 
 package de.sciss.jcollider;
 
+import de.sciss.app.BasicEvent;
+
 /**
  *	These kind of events get delivered by a 
  *	server represenation to inform listeners about
  *	server status changes
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.10, 04-Aug-05
+ *  @version	0.33, 19-Mar-08
  */
 public class ServerEvent
 extends BasicEvent

@@ -52,11 +52,11 @@ import javax.swing.SwingUtilities;
  *  This is a helper class containing utility static functions
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.32, 11-Feb-08
+ *  @version	0.33, 19-Mar-08
  */
 public abstract class JCollider
 {
-	private static final double VERSION	= 0.32;
+	private static final double VERSION	= 0.33;
 	private static final ResourceBundle resBundle = ResourceBundle.getBundle( "JColliderStrings" );
 //	private static final Preferences prefs = Preferences.userNodeForPackage( JCollider.class );
 

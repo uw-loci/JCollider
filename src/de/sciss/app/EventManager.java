@@ -1,8 +1,8 @@
 /*
  *  EventManager.java
- *  JCollider
+ *  de.sciss.app package
  *
- *  Copyright (c) 2004-2007 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2008 Hanns Holger Rutz. All rights reserved.
  *
  *	This software is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -24,10 +24,12 @@
  *
  *
  *  Changelog:
- *		26-Aug-05	copied from de.sciss.app.EventManager
+ *		20-May-05	created from from de.sciss.meloncillo.util.EventManager
+ *		06-Aug-05	added dispose()
+ *		19-Mar-07	collapsing calls to invokeLater
  */
 
-package de.sciss.jcollider;
+package de.sciss.app;
 
 import java.awt.EventQueue;
 import java.util.ArrayList;
@@ -50,7 +52,7 @@ import java.util.ArrayList;
  *  predictable and easily synchronizable.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.14, 25-Feb-08
+ *  @version	0.17, 19-Mar-07
  */
 public class EventManager
 implements Runnable
@@ -60,7 +62,8 @@ implements Runnable
 	private final ArrayList		collListeners   = new ArrayList();  // sync'ed because always in Swing thread
 	private final ArrayList		collQueue		= new ArrayList();  // sync'ed through synchronized( this )
 	private boolean				paused			= false;
-
+	private volatile boolean	invoked			= false;
+	
 	protected EventManager.Processor eventProcessor;
 
 	public EventManager( EventManager.Processor eventProcessor )
@@ -79,7 +82,7 @@ implements Runnable
 	}
 	
 	/**
-	 *  Adds a new listener. The listner
+	 *  Adds a new listener. The listener
 	 *  will receive all events queued after this
 	 *  method is called. Events already in queue
 	 *  at the moment this method is called are not
@@ -139,6 +142,7 @@ implements Runnable
 		int		eventsInCycle;
 
 		synchronized( this ) {
+			invoked = false;
 			if( paused ) return;
 			// we only process that many events
 			// we find NOW in the queue. if the
@@ -146,12 +150,12 @@ implements Runnable
 			// add new events they will be processed
 			// in the next later invocation
 			eventsInCycle = collQueue.size();
-		}
+//		}
 
 		for( ; eventsInCycle > 0; eventsInCycle-- ) {
-			synchronized( this ) {
+//			synchronized( this ) {
 				o = collQueue.remove( 0 );
-			}
+//			}
 			if( o instanceof BasicEvent ) {
 				eventProcessor.processEvent( (BasicEvent) o );
 			} else if( o instanceof PostponedAction ) {
@@ -166,6 +170,7 @@ implements Runnable
 				assert false : o.getClass().getName();
 			}
 		}
+		} // synchronized( this )
 	}
 
 	/**
@@ -211,12 +216,12 @@ implements Runnable
 	 */
 	public void dispatchEvent( BasicEvent e )
 	{
-		int		i;
-		Object  o;
-		boolean invoke;
+		final int		i;
+		final boolean	invoke;
+		final Object	o;
 
 sync:	synchronized( this ) {
-			invoke  = !paused;
+			invoke  = !(paused || invoked);
 			i		= collQueue.size() - 1;
 			if( i >= 0 ) {
 				o = collQueue.get( i );
@@ -228,7 +233,10 @@ sync:	synchronized( this ) {
 			collQueue.add( e );
 		} // synchronized( this )
 
-		if( invoke ) EventQueue.invokeLater( this );
+		if( invoke ) {
+			invoked = true;
+			EventQueue.invokeLater( this );
+		}
 	}
 	
 	/**
@@ -276,7 +284,7 @@ sync:	synchronized( this ) {
 		 *  This gets called in the event thread.
 		 *  Usually implementing classes should
 		 *  loop through all listeners by calling
-		 *  em.countListeners() and em.getListener(),
+		 *  elm.countListeners() and elm.getListener(),
 		 *  and invoke specific dispatching methods
 		 *  on these listeners.
 		 */
@@ -287,8 +295,8 @@ sync:	synchronized( this ) {
 
 	private class PostponedAction
 	{
-		protected final Object	listener;
-		protected final boolean	state;
+		protected final Object   listener;
+		protected final boolean  state;
 		
 		protected PostponedAction( Object listener, boolean state )
 		{

@@ -30,8 +30,7 @@
 //package de.sciss.gui;
 package de.sciss.jcollider.gui;
 
-//import de.sciss.app.BasicEvent;
-import de.sciss.jcollider.BasicEvent;
+import de.sciss.app.BasicEvent;
 
 /**
  *  This kind of event is fired
@@ -39,7 +38,7 @@ import de.sciss.jcollider.BasicEvent;
  *  the user modified its contents.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.25, 05-May-06
+ *  @version	0.33, 19-Mar-08
  *
  *  @see	NumberField#addListener( NumberListener )
  *  @see	NumberListener

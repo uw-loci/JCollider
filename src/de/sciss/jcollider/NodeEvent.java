@@ -41,6 +41,7 @@ import java.util.Collections;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.sciss.app.BasicEvent;
 import de.sciss.net.OSCMessage;
 
 /**
@@ -49,7 +50,7 @@ import de.sciss.net.OSCMessage;
  *	node status changes.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.31, 08-Oct-07
+ *  @version	0.33, 19-Mar-08
  */
 public class NodeEvent
 extends BasicEvent
