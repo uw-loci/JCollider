@@ -2,7 +2,7 @@
  *  OSCresponderNode.java
  *  JCollider
  *
- *  Copyright (c) 2004-2007 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2008 Hanns Holger Rutz. All rights reserved.
  *
  *	This software is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -34,6 +34,7 @@
  *		04-Aug-05	created
  *		26-Aug-05	removed potential null pointer exception in removeNode()
  *		30-Sep-06	modified to comply with new NetUtil version
+ *		08-Apr-08	fixes potential locking problem in messageReceived
  */
 
 package de.sciss.jcollider;
@@ -74,7 +75,7 @@ import de.sciss.net.OSCListener;
  *	a multi responder for its address upon instantiation.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.31, 08-Oct-07
+ *  @version	0.33, 08-Apr-08
  */
 public class OSCMultiResponder
 // extends OSCReceiver
@@ -91,7 +92,10 @@ implements OSCListener
 //	private final Runnable				startOrStop;
 	
 	private final OSCClient				c;
-
+	
+	private OSCResponderNode[]			resps				= new OSCResponderNode[ 2 ];
+	private final Object				sync				= new Object();
+  
 	/**
 	 *	Creates a new responder for the given
 	 *	<code>OSCClient</code>. This is done by the server to
@@ -178,13 +182,18 @@ implements OSCListener
 //		resp.addNode( node );
 //		return resp;
 //	}
+	
+	protected Object getSync()
+	{
+		return sync;
+	}
 
 	protected void addNode( OSCResponderNode node )
 	throws IOException
 	{
 		List specialNodes;
 	
-		synchronized( allNodes ) {
+		synchronized( sync ) {
 //			if( allNodes.isEmpty() && !alwaysListening ) {
 //				if( EventQueue.isDispatchThread() ) {
 //					startOrStop.run();
@@ -195,7 +204,7 @@ implements OSCListener
 			allNodes.add( node );
 			specialNodes = (List) mapCmdToNodes.get( node.getCommandName() );
 			if( specialNodes == null ) {
-				specialNodes = new ArrayList();
+				specialNodes = new ArrayList( 4 );
 				mapCmdToNodes.put( node.getCommandName(), specialNodes );
 			}
 			specialNodes.add( node );
@@ -207,11 +216,14 @@ implements OSCListener
 	{
 		final List specialNodes;
 
-		synchronized( allNodes ) {
+		synchronized( sync ) {
 			specialNodes = (List) mapCmdToNodes.get( node.getCommandName() );
 			if( specialNodes != null ) {
 				specialNodes.remove( node );
 				allNodes.remove( node );
+//				for( int i = 0; i < resps.length; i++ ) {
+//					resps[ i ] = null;	// clear references
+//				}
 				if( allNodes.isEmpty() ) {
 					mapCmdToNodes.clear();
 //					if( !alwaysListening ) {
@@ -226,18 +238,18 @@ implements OSCListener
 		}
 	}
 	
-	/**
-	 *	@synchronization	must be called in the event thread
-	 */
 	protected void dispose()
 	{
-		c.removeOSCListener( this );
-//		mapAddrsToMultis.remove( this );
-		allNodes.clear();
-		mapCmdToNodes.clear();
-if( debug ) System.err.println( "OSCMultiResponder( client = " + c +"; hash = " + hashCode() + " ): dispose" );			
-
-		c.dispose();
+		synchronized( sync ) {
+			c.removeOSCListener( this );
+			//		mapAddrsToMultis.remove( this );
+			allNodes.clear();
+			mapCmdToNodes.clear();
+//			if( resps.length > 0 ) resps = new OSCResponderNode[ 0 ];
+//			resps = null;
+			if( debug ) System.err.println( "OSCMultiResponder( client = " + c +"; hash = " + hashCode() + " ): dispose" );			
+			c.dispose();
+		}
 
 //		try {
 //			stopListening();
@@ -272,20 +284,35 @@ if( debug ) System.err.println( "OSCMultiResponder( client = " + c +"; hash = " 
 	public void messageReceived( OSCMessage msg, SocketAddress sender, long time )
 	{
 //System.err.println( "kieka. got dem "+msg.getName() );
-		OSCResponderNode	resp;
 //		final				Map		mapCmdToNodes;
 		final				List	specialNodes;
+		final				int		numResps;
 	
-		synchronized( allNodes ) {
+		synchronized( sync ) {
 //			mapCmdToNodes = (Map) mapAddrToCmds.get( sender );
 //			if( mapCmdToNodes == null ) return;
 			specialNodes = (List) mapCmdToNodes.get( msg.getName() );
 			if( specialNodes == null ) return;
-			
-			for( int i = 0; i < specialNodes.size(); i++ ) {
-				resp = (OSCResponderNode) specialNodes.get( i );
-				resp.messageReceived( msg, sender, time );
+//			if( resps.length < specialNodes.size() ) {
+//				resps = new OSCResponderNode[ specialNodes.size() + 4 ];
+//			}
+			numResps = specialNodes.size();
+			resps = (OSCResponderNode[]) specialNodes.toArray( resps );
+		}
+
+//		for( int i = 0; i < specialNodes.size(); i++ ) {
+//			resp = (OSCResponderNode) specialNodes.get( i );
+//			resp.messageReceived( msg, sender, time );
+//		}
+
+		for( int i = 0; i < numResps; i++ ) {
+			try {
+				resps[ i ].messageReceived( msg, sender, time );
 			}
+			catch( Exception e ) {
+				e.printStackTrace( Server.getPrintStream() );
+			}
+			resps[ i ] = null;
 		}
 	}
 }

@@ -2,7 +2,7 @@
  *  OSCResponderNode.java
  *  JCollider
  *
- *  Copyright (c) 2004-2007 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2008 Hanns Holger Rutz. All rights reserved.
  *
  *	This software is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -54,19 +54,22 @@ import de.sciss.net.OSCMessage;
  *	and <code>OSCMultiResponder</code>). So you may need to update old code.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.31, 08-Oct-07
+ *  @version	0.33, 08-Apr-08
  */
 public class OSCResponderNode
 implements OSCListener	// , Runnable
 {
 //	private final InetSocketAddress		addr;
-	private final Server				server;
+//	private final Server				server;
 	private final String				cmdName;
 	private final OSCListener			action;
-	private OSCMultiResponder			multi			= null;
-	private boolean						removeWhenDone	= false;
+	private volatile boolean			removeWhenDone	= false;
+	private volatile boolean			listening		= false;		
 
 //	private final List					collMessages	= Collections.synchronizedList( new ArrayList() );	// elements = IncomingMessage instances
+	
+	private final Object				sync;
+	private final OSCMultiResponder		multi;
 
 	/**
 	 *	Creates a new responder node to listen
@@ -96,9 +99,11 @@ implements OSCListener	// , Runnable
 	 */
 	public OSCResponderNode( Server s, String cmdName, OSCListener action )
 	{
-		this.server		= s;
+//		this.server		= s;
 		this.cmdName	= cmdName;
 		this.action		= action;
+		multi			= s.getMultiResponder();
+		sync			= multi.getSync();
 	}
 
 	/**
@@ -130,10 +135,12 @@ implements OSCListener	// , Runnable
 	public OSCResponderNode add()
 	throws IOException
 	{
-		if( isListening() ) throw new IllegalStateException( "OSCResponderNode.add() : duplicate call" );
-		multi = server.getMultiResponder();
-		multi.addNode( this );
-		return this;
+		synchronized( sync ) {
+			if( listening ) throw new IllegalStateException( "OSCResponderNode.add() : duplicate call" );
+			multi.addNode( this );
+			listening = true;
+			return this;
+		}
 	}
 	
 	/**
@@ -145,7 +152,9 @@ implements OSCListener	// , Runnable
 	 */
 	public boolean isListening()
 	{
-		return( multi != null );
+		synchronized( sync ) {
+			return( listening );
+		}
 	}
 
 	/**
@@ -159,7 +168,7 @@ implements OSCListener	// , Runnable
 	 */
 	public OSCResponderNode removeWhenDone()
 	{
-		removeWhenDone	= true;
+		removeWhenDone = true;
 		return this;
 	}
 	
@@ -175,8 +184,14 @@ implements OSCListener	// , Runnable
 	 */
 	public void messageReceived( OSCMessage msg, SocketAddress sender, long time )
 	{
-		if( isListening() ) {
-			action.messageReceived( msg, sender, time );
+//		synchronized( sync ) {
+		if( listening ) {
+			try {
+				action.messageReceived( msg, sender, time );
+			}
+			catch( Exception e1 ) {
+				e1.printStackTrace( Server.getPrintStream() );
+			}
 			if( removeWhenDone ) {
 				try {
 					remove();	// OSCMultiResponder will take care of thread issues
@@ -201,17 +216,11 @@ implements OSCListener	// , Runnable
 	public OSCResponderNode remove()
 	throws IOException
 	{
-		final OSCMultiResponder m = multi;
-	
-		if( m != null ) {
-			try {
-				m.removeNode( this );
-			}
-			finally {
-				multi = null;
-			}
+		synchronized( sync ) {
+			listening = false;
+			multi.removeNode( this );
+			return this;
 		}
-		return this;
 	}
 	
 //	// ----------- internal classes -----------

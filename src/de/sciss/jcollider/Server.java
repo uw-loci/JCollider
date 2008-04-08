@@ -1923,6 +1923,8 @@ resetBufferAutoInfo();
 		
 		public void messageReceived( OSCMessage msg, SocketAddress sender, long time )
 		{
+//			System.out.println( "message received: " + msg.getName() + ", " + msg.getArg( 0 ));
+			
 			if( (msg.getArgCount() > argIdx) && (msg.getArg( argIdx ).equals( argMatch ))) {
 //				done	= msg.getName().equals( resp1.getCommandName() );
 				doneMsg	= msg;
