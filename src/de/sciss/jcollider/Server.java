@@ -45,6 +45,8 @@
 
 package de.sciss.jcollider;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -62,8 +64,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
+
+import javax.swing.Timer;
+//import java.util.Timer;
+//import java.util.TimerTask;
 
 import de.sciss.app.BasicEvent;
 import de.sciss.app.EventManager;
@@ -98,7 +102,7 @@ import de.sciss.net.OSCListener;
  *						regarded thread safe
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.33, 19-Mar-08
+ *  @version	0.33, 26-May-08
  */
 public class Server
 implements Constants, EventManager.Processor
@@ -118,8 +122,8 @@ implements Constants, EventManager.Processor
 	private final int						clientID;
 	
 	private final boolean					isLocal;
-	private boolean							serverRunning		= false;
-	protected boolean						serverBooting		= false;
+	private volatile boolean				serverRunning		= false;
+	protected volatile boolean				serverBooting		= false;
 	private boolean							notified			= true;
 	
 	protected Buffer[]						bufferArray;
@@ -132,9 +136,9 @@ implements Constants, EventManager.Processor
 
 	private static String					program				= "scsynth";
 	private static boolean					inform				= true;
-	protected static PrintStream			printStream			= System.err;
+	protected static volatile PrintStream	printStream			= System.err;
 	
-	protected static final Timer			appClock			= new Timer();	// nice work-around, eh?
+//	protected static final Timer			appClock			= new Timer();	// nice work-around, eh?
 	private StatusWatcher					aliveThread			= null;
 	
 	// OSC communication
@@ -158,6 +162,8 @@ implements Constants, EventManager.Processor
 	private static final OSCMessage			statusMsg			= new OSCMessage( "/status" );
 
 	protected final Server					enc_this			= this;
+	
+	protected final Object					syncBootThread		= new Object();
 
 	/**
 	 *	Creates a new <code>Server</code> representation
@@ -518,19 +524,26 @@ implements Constants, EventManager.Processor
 	protected void setRunning( boolean serverRunning )
 	{
 //System.err.println( "ici : "+serverRunning );
-		if( this.serverRunning != serverRunning ) {
-			this.serverRunning = serverRunning;
-			if( !serverRunning ) {
-//				recordNode = nil;
-				changed( ServerEvent.STOPPED );
-			} else {
-//System.err.println( "ici" );
-				synchronized( collBootCompletion ) {
+		synchronized( syncBootThread ) {
+			if( this.serverRunning != serverRunning ) {
+				this.serverRunning = serverRunning;
+				if( !serverRunning ) {
+	//				recordNode = nil;
+					changed( ServerEvent.STOPPED );
+					if( bootThread != null ) {
+						try {
+							bootThread.keepScRunning = false;
+							syncBootThread.wait( 4000 );
+						}
+						catch( InterruptedException e1 ) { /* empty */ }
+					}
+				} else {
+	//System.err.println( "ici" );
 					while( !collBootCompletion.isEmpty() ) {
 						((CompletionAction) collBootCompletion.remove( 0 )).completion( this );
 					}
+					changed( ServerEvent.RUNNING );
 				}
-				changed( ServerEvent.RUNNING );
 			}
 		}
 	}
@@ -589,9 +602,7 @@ implements Constants, EventManager.Processor
 	 */
 	public double getSampleRate()
 	{
-		synchronized( status ) {
-			return status.sampleRate;
-		}
+		return status.sampleRate;
 	}
 
 	/**
@@ -944,9 +955,7 @@ implements Constants, EventManager.Processor
 	 */
 	public void addDoWhenBooted( CompletionAction action )
 	{
-		synchronized( collBootCompletion ) {
-			collBootCompletion.add( action );
-		}
+		collBootCompletion.add( action );
 	}
 
 	/**
@@ -961,9 +970,7 @@ implements Constants, EventManager.Processor
 	 */
 	public void removeDoWhenBooted( CompletionAction action )
 	{
-		synchronized( collBootCompletion ) {
-			collBootCompletion.remove( action );
-		}
+		collBootCompletion.remove( action );
 	}
 	
 	/**
@@ -993,9 +1000,9 @@ implements Constants, EventManager.Processor
 		em.removeListener( l );
 	}
 	
-	protected void changed( int ID )
+	protected void changed( int id )
 	{
-		em.dispatchEvent( new ServerEvent( this, ID, System.currentTimeMillis(), this ));
+		em.dispatchEvent( new ServerEvent( this, id, System.currentTimeMillis(), this ));
 	}
 
 	private void bootServerApp( boolean startAliveThread )
@@ -1007,7 +1014,9 @@ implements Constants, EventManager.Processor
 	
 		Server.inform( "Booting SuperCollider server at " + getOptions().getProtocol().toUpperCase() + " port " + port + " ..." );
 //		bootThread							= new BootThread( this, cmdArray, getOptions().getEnvMap(), startAliveThread );
-		bootThread							= new BootThread( this, cmdArray, startAliveThread );
+		synchronized( syncBootThread ) {
+			bootThread						= new BootThread( this, cmdArray, startAliveThread );
+		}
 	}
 	
 	/**
@@ -1082,9 +1091,11 @@ implements Constants, EventManager.Processor
 	public void startAliveThread( float delay, float period, int deathBounces )
 	throws IOException
 	{
-		if( aliveThread == null ) {
-			aliveThread = new StatusWatcher( delay, period, deathBounces );
-			aliveThread.start();
+		synchronized( syncBootThread ) {
+			if( aliveThread == null ) {
+				aliveThread = new StatusWatcher( delay, period, deathBounces );
+				aliveThread.start();
+			}
 		}
 	}
 	
@@ -1101,9 +1112,11 @@ implements Constants, EventManager.Processor
 	public void stopAliveThread()
 	throws IOException
 	{
-		if( aliveThread != null ) {
-			aliveThread.stop();
-			aliveThread = null;
+		synchronized( syncBootThread ) {
+			if( aliveThread != null ) {
+				aliveThread.stop();
+				aliveThread = null;
+			}
 		}
 	}
 
@@ -1514,11 +1527,13 @@ resetBufferAutoInfo();
 				}
 			}
 			// ok, now last chance : if local, kill the process
-			if( isLocal && bootThread != null ) {
-				bootThread.keepScRunning = false;
+			if( isLocal ) {
 				try {
-					synchronized( bootThread ) {
-						bootThread.wait( 4000 );
+					synchronized( syncBootThread ) {
+						if( bootThread != null ) {
+							bootThread.keepScRunning = false;
+							syncBootThread.wait( 4000 );
+						}
 					}
 				}
 				catch( InterruptedException e1 ) { /* ignored */ }
@@ -1608,14 +1623,14 @@ resetBufferAutoInfo();
 		public void completion( Server server );
 	}
 
-	private static class BootThread
+	private class BootThread
 	extends Thread
 	{
-		private final String[]	cmdArray;
-//		private final String[]	envArray;
-		protected boolean		keepScRunning	= true;
-		private final Server	server;
-		private final boolean	startAliveThread;
+		private final String[]			cmdArray;
+//		private final String[]			envArray;
+		protected volatile boolean		keepScRunning	= true;
+		protected final Server			server;
+		private final boolean			startAliveThread;
 	
 //		private BootThread( Server server, String[] cmdArray, Map envMap, boolean startAliveThread )
 		protected BootThread( Server server, String[] cmdArray, boolean startAliveThread )
@@ -1700,22 +1715,21 @@ resetBufferAutoInfo();
 			}
 			finally {
 				if( p != null ) {
-					printStream.println( "scsynth didn't quit. we're killing it!" );
+//					printStream.println( "scsynth didn't quit. we're killing it!" );
 					p.destroy();				
 				}
-				try {
-					server.stopAliveThread();
+				synchronized( syncBootThread ) {
+					try {
+						server.stopAliveThread();
+					}
+					catch( IOException e1 ) {
+						printError( "Server.stopAliveThread", e1 );
+					}
+					server.bootThread = null; // ! must be before setRunning !
+					server.setBooting( false );
+					server.setRunning( false );
+					syncBootThread.notifyAll();
 				}
-				catch( IOException e1 ) {
-					printError( "Server.stopAliveThread", e1 );
-				}
-				server.setBooting( false );
-				server.setRunning( false );
-				server.bootThread = null;
-			}
-		
-			synchronized( this ) {
-				this.notifyAll();
 			}
 		}
 
@@ -1744,14 +1758,14 @@ resetBufferAutoInfo();
 	 */	
 	public static class Status
 	{
-		public int		numUGens;
-		public int		numSynths;
-		public int		numGroups;
-		public int		numSynthDefs;
-		public float	avgCPU;
-		public float	peakCPU;
-		public double	sampleRate;
-		public double	actualSampleRate;
+		public int				numUGens;
+		public int				numSynths;
+		public int				numGroups;
+		public int				numSynthDefs;
+		public float			avgCPU;
+		public float			peakCPU;
+		public volatile double	sampleRate;
+		public volatile double	actualSampleRate;
 		
 		protected static Status copyFrom( Status s )
 		{
@@ -1771,14 +1785,15 @@ resetBufferAutoInfo();
 	}
 	
 	private class StatusWatcher
-	extends TimerTask
-	implements OSCListener
+//	extends TimerTask
+	implements OSCListener, ActionListener
 	{
 		private int							alive			= 0;
-		private final	long				delayMillis;
-		private final	long				periodMillis;
+		private final	int					delayMillis;
+		private final	int					periodMillis;
 		private final	OSCResponderNode	resp;
 		private final	int					deathBounces;
+		private final	Timer				timer;
 
 //		private StatusWatcher( float delay, float period )
 //		{
@@ -1787,10 +1802,12 @@ resetBufferAutoInfo();
 //
 		protected StatusWatcher( float delay, float period, int deathBounces )
 		{
-			delayMillis			= (long) (delay * 1000);
-			periodMillis		= (long) (period * 1000);
+			delayMillis			= (int) (delay * 1000);
+			periodMillis		= (int) (period * 1000);
 			resp				= new OSCResponderNode( enc_this, "status.reply", this );
 			this.deathBounces	= deathBounces;
+			timer				= new Timer( periodMillis, this );
+			timer.setInitialDelay( delayMillis );
 		}
 		
 		protected void start()
@@ -1799,7 +1816,8 @@ resetBufferAutoInfo();
 //System.err.println( "start" );
 //new Throwable().printStackTrace();
 			resp.add();
-			appClock.schedule( this, delayMillis, periodMillis );
+			timer.restart();
+//			appClock.schedule( this, delayMillis, periodMillis );
 		}
 
 		protected void stop()
@@ -1807,16 +1825,17 @@ resetBufferAutoInfo();
 		{
 //System.err.println( "stop" );
 //new Throwable().printStackTrace();
-			this.cancel();
+//			this.cancel();
+			timer.stop();
 			resp.remove();
 		}
 		
-		public void run()
+		public void actionPerformed( ActionEvent e )
 		{
 //System.err.println( "setRunning( "+alive+" )" );
 			if( alive > 0 ) {
 				setRunning( true );
-				alive = alive - 1;
+				alive--;
 			} else {
 				setRunning( false );
 			}
@@ -1874,7 +1893,7 @@ resetBufferAutoInfo();
 	implements OSCListener
 	{
 //		private boolean					done	= false;
-		protected OSCMessage			doneMsg	= null;
+		protected volatile OSCMessage	doneMsg	= null;
 		private final OSCResponderNode	resp1;
 		private final OSCResponderNode	resp2;
 		private final int				argIdx;

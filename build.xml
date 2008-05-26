@@ -12,8 +12,8 @@
     <property name="main-class"		value="de.sciss.jcollider.JCollider"/>
 	<property name="lib.dir"		value="libraries"/>
 	<property name="libraries"		value="${lib.dir}/NetUtil.jar"/>
-    <property name="version"		value="0.32"/>
-    <property name="debug"			value="false"/>
+    <property name="version"		value="0.33"/>
+    <property name="debug"			value="true"/>
 	
 	<taskdef resource="net/sf/antcontrib/antlib.xml"/>
 
