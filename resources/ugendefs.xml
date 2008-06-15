@@ -76,17 +76,17 @@
 		<special idx="3" name="div" />
 		<special idx="4" name="/" />
 		<special idx="5" name="mod" />
-<!--	<special idx="6" name="???" />
-		<special idx="7" name="???" /> -->
+		<special idx="6" name="==" />
+		<special idx="7" name="!=" />
 		<special idx="8" name="&lt;" />
 		<special idx="9" name="&gt;" />
 		<special idx="10" name="&lt;=" />
 		<special idx="11" name="&gt;=" />
 		<special idx="12" name="min" />
 		<special idx="13" name="max" />
-<!--	<special idx="14" name="???" />
-		<special idx="15" name="???" />
-		<special idx="16" name="???" /> -->
+		<special idx="14" name="&" />
+		<special idx="15" name="|" />
+		<special idx="16" name="^" />
 		<special idx="17" name="lcm" />
 		<special idx="18" name="gcd" />
 		<special idx="19" name="round" />
@@ -99,7 +99,7 @@
 		<special idx="26" name="leftShift" />
 		<special idx="27" name="rightShift" />
 		<special idx="28" name="unsignedRightShift" />
-<!--	<special idx="29" name="???" /> -->
+		<special idx="29" name="fill" />
 		<special idx="30" name="ring1" />
 		<special idx="31" name="ring2" />
 		<special idx="32" name="ring3" />
@@ -116,7 +116,7 @@
 		<special idx="43" name="excess" />
 		<special idx="44" name="fold2" />
 		<special idx="45" name="wrap2" />
-<!--	<special idx="46" name="???" /> -->
+		<special idx="46" name="firstArg" />
 		<special idx="47" name="rrand" />
 		<special idx="48" name="exprand" />
 	</ugen>
@@ -124,13 +124,13 @@
 	<ugen class="UnaryOpUGen" rates="audio control demand scalar">
 		<arg name="a" />
 		<special idx="0" name="neg" />
-<!--	<special idx="1" name="???" />
-		<special idx="2" name="???" />
-		<special idx="3" name="???" /> -->
+		<special idx="1" name="not" />
+		<special idx="2" name="isNil" />
+		<special idx="3" name="notNil" />
 		<special idx="4" name="bitNot" />
 		<special idx="5" name="abs" />
 		<special idx="6" name="asFloat" />
-<!--	<special idx="7" name="???" /> -->
+		<special idx="7" name="asInteger" />
 		<special idx="8" name="ceil" />
 		<special idx="9" name="floor" />
 		<special idx="10" name="frac" />
@@ -153,7 +153,7 @@
 		<special idx="27" name="log10" />
 		<special idx="28" name="sin" />
 		<special idx="29" name="cos" />
-		<special idx="30" name="tam" />
+		<special idx="30" name="tan" />
 		<special idx="31" name="asin" />
 		<special idx="32" name="acos" />
 		<special idx="33" name="atan" />
@@ -168,9 +168,9 @@
 		<special idx="42" name="distort" />
 		<special idx="43" name="softclip" />
 		<special idx="44" name="coin" />
-<!--	<special idx="45" name="???" />
-		<special idx="46" name="???" />
-		<special idx="47" name="???" /> -->
+		<special idx="45" name="digitValue" />
+		<special idx="46" name="silence" />
+		<special idx="47" name="thru" />
 		<special idx="48" name="rectWindow" />
 		<special idx="49" name="hanWindow" />
 		<special idx="50" name="welWindow" />
