@@ -283,27 +283,15 @@ implements OSCListener
 
 	public void messageReceived( OSCMessage msg, SocketAddress sender, long time )
 	{
-//System.err.println( "kieka. got dem "+msg.getName() );
-//		final				Map		mapCmdToNodes;
 		final				List	specialNodes;
 		final				int		numResps;
 	
 		synchronized( sync ) {
-//			mapCmdToNodes = (Map) mapAddrToCmds.get( sender );
-//			if( mapCmdToNodes == null ) return;
 			specialNodes = (List) mapCmdToNodes.get( msg.getName() );
 			if( specialNodes == null ) return;
-//			if( resps.length < specialNodes.size() ) {
-//				resps = new OSCResponderNode[ specialNodes.size() + 4 ];
-//			}
 			numResps = specialNodes.size();
 			resps = (OSCResponderNode[]) specialNodes.toArray( resps );
 		}
-
-//		for( int i = 0; i < specialNodes.size(); i++ ) {
-//			resp = (OSCResponderNode) specialNodes.get( i );
-//			resp.messageReceived( msg, sender, time );
-//		}
 
 		for( int i = 0; i < numResps; i++ ) {
 			try {

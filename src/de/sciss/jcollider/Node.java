@@ -1401,7 +1401,6 @@ implements Constants, TreeNode
 	public void register( boolean assumePlaying )
 	throws IOException
 	{
-//		NodeWatcher.register( this, assumePlaying );
 		final NodeWatcher watcher = NodeWatcher.newFrom( getServer() );
 		watcher.register( this, assumePlaying );
 	}

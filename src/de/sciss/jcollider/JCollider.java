@@ -52,7 +52,7 @@ import javax.swing.SwingUtilities;
  *  This is a helper class containing utility static functions
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.33, 19-Mar-08
+ *  @version	0.33, 12-Jul-08
  */
 public abstract class JCollider
 {

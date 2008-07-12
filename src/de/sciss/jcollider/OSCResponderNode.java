@@ -99,7 +99,6 @@ implements OSCListener	// , Runnable
 	 */
 	public OSCResponderNode( Server s, String cmdName, OSCListener action )
 	{
-//		this.server		= s;
 		this.cmdName	= cmdName;
 		this.action		= action;
 		multi			= s.getMultiResponder();
@@ -184,7 +183,6 @@ implements OSCListener	// , Runnable
 	 */
 	public void messageReceived( OSCMessage msg, SocketAddress sender, long time )
 	{
-//		synchronized( sync ) {
 		if( listening ) {
 			try {
 				action.messageReceived( msg, sender, time );
@@ -199,7 +197,6 @@ implements OSCListener	// , Runnable
 				catch( IOException e1 ) {
 					e1.printStackTrace( Server.getPrintStream() );
 				}
-//				collMessages.clear();
 			}
 		}
 	}

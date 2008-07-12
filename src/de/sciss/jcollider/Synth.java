@@ -34,6 +34,7 @@
  *		04-Aug-05	created
  *		02-Oct-05	removed all setGroup statements. to have the group
  *					set correctly, use a NodeWatcher instead
+ *		12-Jul-08	added get(n)(Msg) and grain constructors
  */
 
 package de.sciss.jcollider;
@@ -57,12 +58,19 @@ import de.sciss.net.OSCMessage;
  *				is instantiation and new-messages
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.31, 08-Oct-07
+ *  @version	0.33, 12-Jul-08
  */
 public class Synth
 extends Node
 {
 	private final String defName;
+
+	// immediately sends
+	public Synth( String defName, Node target )
+	throws IOException
+	{
+		this( defName, null, null, target, kAddToHead );
+	}
 
 	// immediately sends
 	public Synth( String defName, String[] argNames, float[] argValues, Node target )
@@ -86,6 +94,26 @@ extends Node
 		super( server, nodeID );
 		
 		this.defName	= defName;
+	}
+	
+	public static void grain( String defName, Node target )
+	throws IOException
+	{
+		grain( defName, null, null, target, kAddToHead );
+	}
+
+	public static void grain( String defName, String[] argNames, float[] argValues, Node target )
+	throws IOException
+	{
+		grain( defName, argNames, argValues, target, kAddToHead );
+	}
+
+	public static void grain( String defName, String[] argNames, float[] argValues, Node target, int addAction )
+	throws IOException
+	{
+		final Synth s = new Synth( defName, target.getServer(), -1 );
+
+		s.getServer().sendMsg( s.newMsg( target, argNames, argValues, addAction ));
 	}
 	
 	public String getDefName()
@@ -247,34 +275,338 @@ extends Node
 		return newMsg( aNode, argNames, argValues, kAddReplace );
 	}
 
-//	// nodeID -1 
-//	*grain { arg defName, args, target, addAction=\addToHead;
-//		var server;
-//		target = target.asTarget;
-//		server = target.server;
-//		server.sendMsg(9, defName.asDefName, -1, addActions[addAction], target.nodeID, *args);
-//			//"/s_new"
-//		^nil;
-//	}
+	/**
+	 * 	Queries the current value of a synth control.
+	 * 
+	 *	@param	index	the index of the control to query
+	 *	@return	the curresponding control value
+	 *	@throws IOException	when an error occurs sending the message, or when
+	 *			a timeout or failure occurs with scsynth processing the message
+	 */
+	public float get( int index )
+	throws IOException
+	{
+		final OSCMessage getMsg = getMsg( index );
+		final OSCMessage replyMsg = getServer().sendMsgSync( getMsg, "/n_set", "/fail",
+		    new int[] { 0, 1 }, new Object[] { new Integer( getNodeID() ), new Integer( index )},
+		    new int[] { 0 }, new Object[] { getMsg.getName() }, 4f );
+		
+		if( (replyMsg != null) && replyMsg.getName().equals( "/n_set" )) {
+			return ((Number) replyMsg.getArg( 2 )).floatValue();
+		} else {
+			throw new IOException( replyMsg == null ? "s_get timeout" : "s_get failed" );
+		}
+	}
 	
-//	get { arg index, action;
-//		OSCpathResponder(server.addr,['/n_set',nodeID,index],{ arg time, r, msg; 
-//			action.value(msg.at(3)); r.remove }).add;
-//		server.sendMsg(44, nodeID, index);	//"/s_get"
-//	}
-//	getMsg { arg index;
-//		^[44, nodeID, index];	//"/s_get"
-//	}
-//	
-//	getn { arg index, count, action;
-//		OSCpathResponder(server.addr,['/n_setn',nodeID,index],{arg time, r, msg;
-//			action.value(msg.copyToEnd(4)); r.remove } ).add; 
-//		server.sendMsg(45, nodeID, index, count); //"/s_getn"
-//	}
-//	getnMsg { arg index, count;
-//		^[45, nodeID, index, count]; //"/s_getn"
-//	}
+	/**
+	 * 	Queries different current values of a synth control.
+	 * 
+	 *	@param	indices	the indices of the controls to query
+	 *	@return	the curresponding control values, or null if
+	 *			a timeout or failure occurs with scsynth processing the message
+	 *	@throws IOException	when an error occurs sending the message
+	 */
+	public float[] get( int[] indices )
+	throws IOException
+	{
+		final OSCMessage	getMsg		= getMsg( indices );
+		final int[]			doneIndices	= new int[ indices.length + 1 ];
+		final Object[]		doneMatches	= new Object[ indices.length + 1 ];
+		doneIndices[ 0 ] = 0;
+		doneMatches[ 0 ] = new Integer( getNodeID() );
+		for( int i = 1, j = 0, k = 1; j < indices.length; i++, j++, k += 2 ) {
+			doneIndices[ i ] = k;
+			doneMatches[ i ] = new Integer( indices[ j ]);
+		}
+		final OSCMessage replyMsg = getServer().sendMsgSync( getMsg, "/n_set", "/fail",
+		    doneIndices, doneMatches,
+		    new int[] { 0 }, new Object[] { getMsg.getName() }, 4f );
+		
+		if( (replyMsg != null) && replyMsg.getName().equals( "/n_set" )) {
+			final float[] values = new float[ indices.length ];
+			for( int i = 2, j = 0; j < indices.length; i += 2, j++ ) {
+				 values[ j ] = ((Number) replyMsg.getArg( i )).floatValue();
+			}
+			return values;
+		} else {
+			return null;
+		}
+	}
+	
+	/**
+	 * 	Queries the current value of a synth control.
+	 * 
+	 *	@param	name	the name of the control to query
+	 *	@return	the curresponding control value
+	 *	@throws IOException	when an error occurs sending the message, or when
+	 *			a timeout or failure occurs with scsynth processing the message
+	 */
+	public float get( String name )
+	throws IOException
+	{
+		final OSCMessage getMsg = getMsg( name );
+		final OSCMessage replyMsg = getServer().sendMsgSync( getMsg, "/n_set", "/fail",
+		    new int[] { 0, 1 }, new Object[] { new Integer( getNodeID() ), name },
+		    new int[] { 0 }, new Object[] { getMsg.getName() }, 4f );
+		
+		if( (replyMsg != null) && replyMsg.getName().equals( "/n_set" )) {
+			return ((Number) replyMsg.getArg( 2 )).floatValue();
+		} else {
+			throw new IOException( replyMsg == null ? "s_get timeout" : "s_get failed" );
+		}
+	}
+	
+	/**
+	 * 	Queries different current values of a synth control.
+	 * 
+	 *	@param	names	the names of the controls to query
+	 *	@return	the curresponding control values, or null if
+	 *			a timeout or failure occurs with scsynth processing the message
+	 *	@throws IOException	when an error occurs sending the message
+	 */
+	public float[] get( String[] names )
+	throws IOException
+	{
+		final OSCMessage	getMsg		= getMsg( names );
+		final int[]			doneIndices	= new int[ names.length + 1 ];
+		final Object[]		doneMatches = new Object[ names.length + 1 ];
+		doneIndices[ 0 ] = 0;
+		doneMatches[ 0 ] = new Integer( getNodeID() );
+		for( int i = 1, j = 0, k = 1; j < names.length; i++, j++, k += 2 ) {
+			doneIndices[ i ] = k;
+			doneMatches[ i ] = names[ j ];
+		}
+		final OSCMessage replyMsg = getServer().sendMsgSync( getMsg, "/n_set", "/fail",
+		    doneIndices, doneMatches,
+		    new int[] { 0 }, new Object[] { getMsg.getName() }, 4f );
+		
+		if( (replyMsg != null) && replyMsg.getName().equals( "/n_set" )) {
+			final float[] values = new float[ names.length ];
+			for( int i = 2, j = 0; j < names.length; i += 2, j++ ) {
+				 values[ j ] = ((Number) replyMsg.getArg( i )).floatValue();
+			}
+			return values;
+		} else {
+			return null;
+		}
+	}
+	
+	public OSCMessage getMsg( int index )
+	{
+		return new OSCMessage( "/s_get", new Object[] { new Integer( getNodeID() ), new Integer( index )});
+	}
 
+	public OSCMessage getMsg( int[] indices )
+	{
+		final Object[] args = new Object[ indices.length + 1 ];
+		args[ 0 ] = new Integer( getNodeID() );
+		for( int i = 1, j = 0; j < indices.length; i++, j++ ) {
+			args[ i ] = new Integer( indices[ j ]);
+		}
+		return new OSCMessage( "/s_get", args );
+	}
+
+	public OSCMessage getMsg( String name )
+	{
+		return new OSCMessage( "/s_get", new Object[] { new Integer( getNodeID() ), name });
+	}
+
+	public OSCMessage getMsg( String[] names )
+	{
+		final Object[] args = new Object[ names.length + 1 ];
+		args[ 0 ] = new Integer( getNodeID() );
+		System.arraycopy(  names, 0, args, 1, names.length );
+		return new OSCMessage( "/s_get", args );
+	}
+
+	/**
+	 * 	Queries a range of current values of the synth's controls.
+	 * 
+	 *	@param	index	the start index of the controls to query
+	 *	@param	count	the number of successive controls to query
+	 *	@return	the curresponding control values or null, when
+	 *			a timeout or failure occurs with scsynth processing the message
+	 *	@throws IOException	when an error occurs sending the message
+	 */
+	public float[] getn( int index, int count )
+	throws IOException
+	{
+		final OSCMessage getnMsg = getnMsg( index, count );
+		final OSCMessage replyMsg = getServer().sendMsgSync( getnMsg, "/n_setn", "/fail",
+		    new int[] { 0, 1, 2 }, new Object[] { new Integer( getNodeID() ), new Integer( index ), new Integer( count )},
+		    new int[] { 0 }, new Object[] { getnMsg.getName() }, 4f );
+		
+		if( (replyMsg != null) && replyMsg.getName().equals( "/n_setn" )) {
+			final float[] values = new float[ count ];
+			for( int i = 3, j = 0; j < count; j++ ) {
+				values[ j ] = ((Number) replyMsg.getArg( i )).floatValue();
+			}
+			return values;
+		} else {
+			return null;
+		}
+	}
+	
+	/**
+	 * 	Queries a range of current values of the synth's controls.
+	 * 
+	 *	@param	name	the name of the first control to query
+	 *	@param	count	the number of successive controls to query
+	 *	@return	the curresponding control values or null, when
+	 *			a timeout or failure occurs with scsynth processing the message
+	 *	@throws IOException	when an error occurs sending the message
+	 */
+	public float[] getn( String name, int count )
+	throws IOException
+	{
+		final OSCMessage getnMsg = getnMsg( name, count );
+		final OSCMessage replyMsg = getServer().sendMsgSync( getnMsg, "/n_setn", "/fail",
+		    new int[] { 0, 1, 2 }, new Object[] { new Integer( getNodeID() ), new Integer( name ), new Integer( count )},
+		    new int[] { 0 }, new Object[] { getnMsg.getName() }, 4f );
+		
+		if( (replyMsg != null) && replyMsg.getName().equals( "/n_setn" )) {
+			final float[] values = new float[ count ];
+			for( int i = 3, j = 0; j < count; j++ ) {
+				values[ j ] = ((Number) replyMsg.getArg( i )).floatValue();
+			}
+			return values;
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * 	Queries different ranges of current values of the synth's controls.
+	 * 
+	 *	@param	indices	the start indices of the controls to query
+	 *	@param	counts	for each start index, the number of successive controls to query
+	 *	@return	the curresponding control values, or null if
+	 *			a timeout or failure occurs with scsynth processing the message
+	 *	@throws IOException	when an error occurs sending the message
+	 */
+	public float[] getn( int[] indices, int[] counts )
+	throws IOException
+	{
+		// getnMsg() checks indices.length versus counts.length already
+		final OSCMessage	getnMsg		= getnMsg( indices, counts );
+		final int[]			doneIndices	= new int[ (indices.length << 1) + 1 ];
+		final Object[]		doneMatches	= new Object[ (indices.length << 1) + 1 ];
+		int numValues    = 0;
+		doneIndices[ 0 ] = 0;
+		doneMatches[ 0 ] = new Integer( getNodeID() );
+		for( int i = 1, j = 0, k = 1; j < indices.length; j++ ) {
+			doneIndices[ i ] = k;
+			doneMatches[ i ] = new Integer( indices[ j ]);
+			i++;
+			k++;
+			doneIndices[ i ] = k;
+			doneMatches[ i ] = new Integer( counts[ j ]);
+			i++;
+			k += counts[ j ] + 1;
+			numValues += counts[ j ]; 
+		}
+		final OSCMessage replyMsg = getServer().sendMsgSync( getnMsg, "/n_setn", "/fail",
+		    doneIndices, doneMatches,
+		    new int[] { 0 }, new Object[] { getnMsg.getName() }, 4f );
+		
+		if( (replyMsg != null) && replyMsg.getName().equals( "/n_setn" )) {
+			final float[] values = new float[ numValues ];
+			for( int i = 3, j = 0, k = 0; j < indices.length; i += 2, j++ ) {
+				for( int m = 0; m < counts[ j ]; i++, k++, m++ ) {
+					values[ k ] = ((Number) replyMsg.getArg( i )).floatValue();
+				}
+			}
+			return values;
+		} else {
+			return null;
+		}
+	}
+
+	/**
+	 * 	Queries different ranges of current values of the synth's controls.
+	 * 
+	 *	@param	names	the start names of the controls to query
+	 *	@param	counts	for each start name, the number of successive controls to query
+	 *	@return	the curresponding control values, or null if
+	 *			a timeout or failure occurs with scsynth processing the message
+	 *	@throws IOException	when an error occurs sending the message
+	 */
+	public float[] getn( String[] names, int[] counts )
+	throws IOException
+	{
+		// getnMsg() checks indices.length versus counts.length already
+		final OSCMessage	getnMsg		= getnMsg( names, counts );
+		final int[]			doneIndices	= new int[ (names.length << 1) + 1 ];
+		final Object[]		doneMatches	= new Object[ (names.length << 1) + 1 ];
+		int numValues    = 0;
+		doneIndices[ 0 ] = 0;
+		doneMatches[ 0 ] = new Integer( getNodeID() );
+		for( int i = 1, j = 0, k = 1; j < names.length; j++ ) {
+			doneIndices[ i ] = k;
+			doneMatches[ i ] = new Integer( names[ j ]);
+			i++;
+			k++;
+			doneIndices[ i ] = k;
+			doneMatches[ i ] = new Integer( counts[ j ]);
+			i++;
+			k += counts[ j ] + 1;
+			numValues += counts[ j ]; 
+		}
+		final OSCMessage replyMsg = getServer().sendMsgSync( getnMsg, "/n_setn", "/fail",
+		    doneIndices, doneMatches,
+		    new int[] { 0 }, new Object[] { getnMsg.getName() }, 4f );
+		
+		if( (replyMsg != null) && replyMsg.getName().equals( "/n_setn" )) {
+			final float[] values = new float[ numValues ];
+			for( int i = 3, j = 0, k = 0; j < names.length; i += 2, j++ ) {
+				for( int m = 0; m < counts[ j ]; i++, k++, m++ ) {
+					values[ k ] = ((Number) replyMsg.getArg( i )).floatValue();
+				}
+			}
+			return values;
+		} else {
+			return null;
+		}
+	}
+
+	public OSCMessage getnMsg( int index, int count )
+	{
+		return new OSCMessage( "/s_getn", new Object[] { new Integer( getNodeID() ),
+		 					   new Integer( index ), new Integer( count )});
+	}
+
+	public OSCMessage getnMsg( int[] indices, int[] counts )
+	{
+		if( indices.length != counts.length ) throw new IllegalArgumentException( "# of indices must match # of counts" );
+		
+		final Object[] args = new Object[ (indices.length << 1) + 1 ];
+		args[ 0 ] = new Integer( getNodeID() );
+		for( int i = 1, j = 0; j < indices.length; j++ ) {
+			args[ i++ ] = new Integer( indices[ j ]);
+			args[ i++ ] = new Integer( counts[ j ]);
+		}
+		return new OSCMessage( "/s_getn", args );
+	}
+
+	public OSCMessage getnMsg( String name, int count )
+	{
+		return new OSCMessage( "/s_getn", new Object[] { new Integer( getNodeID() ),
+							   name, new Integer( count )});
+	}
+
+	public OSCMessage getnMsg( String[] names, int[] counts )
+	{
+		if( names.length != counts.length ) throw new IllegalArgumentException( "# of names must match # of counts" );
+		
+		final Object[] args = new Object[ (names.length << 1) + 1 ];
+		args[ 0 ] = new Integer( getNodeID() );
+		for( int i = 1, j = 0; j < names.length; j++ ) {
+			args[ i++ ] = names[ j ];
+			args[ i++ ] = new Integer( counts[ j ]);
+		}
+		return new OSCMessage( "/s_getn", args );
+	}
+	
 	public String toString()
 	{
 		if( getName() == null ) {

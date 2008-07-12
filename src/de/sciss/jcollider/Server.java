@@ -102,7 +102,7 @@ import de.sciss.net.OSCListener;
  *						regarded thread safe
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.33, 26-May-08
+ *  @version	0.33, 12-Jul-08
  */
 public class Server
 implements Constants, EventManager.Processor
@@ -1199,18 +1199,47 @@ implements Constants, EventManager.Processor
 	 *	@param	msg			the message to send
 	 *	@param	doneCmd		the OSC command with which the server replies upon success
 	 *	@param	failCmd		the OSC command with which the server replies upon failure (can be <code>null</code>)
-	 *	@param	argIdx		the OSC reply message argument index to match
-	 *	@param	argMatch	the OSC reply message argument value to match
+	 *	@param	doneArgIdx		the OSC reply message argument index to match
+	 *	@param	doneArgMatch	the OSC reply message argument value to match
 	 *	@param	timeout		the maximum amount of time in seconds to wait
 	 *	@return				the reply message or <code>null</code> if
 	 *						no reply was received in time
 	 *	
 	 *	@throws	IOException	if sending the message or receiving the reply fails
 	 */
-	public OSCMessage sendMsgSync( OSCMessage msg, String doneCmd, String failCmd, int argIdx, Object argMatch, float timeout )
+	public OSCMessage sendMsgSync( OSCMessage msg, String doneCmd, String failCmd, int doneArgIdx, Object doneArgMatch, float timeout )
 	throws IOException
 	{
-		final SyncResponder	resp = new SyncResponder( doneCmd, failCmd, argIdx, argMatch );
+		return sendMsgSync( msg, doneCmd, failCmd,
+		                    new int[] { doneArgIdx }, new Object[] { doneArgMatch },
+		                    new int[] { 0 }, new Object[] { msg.getName() },
+		                    timeout );
+	}
+	
+	/**
+	 *	Sends a message and waits for a corresponding reply or failure message
+	 *	from the server.
+	 *
+	 *	@param	msg				the message to send
+	 *	@param	doneCmd			the OSC command with which the server replies upon success
+	 *	@param	failCmd			the OSC command with which the server replies upon failure (can be <code>null</code>)
+	 *	@param	doneArgIndices	the OSC reply message argument indices to match for success
+	 *	@param	doneArgMatches	the OSC reply message argument values to match for success
+	 *	@param	failArgIndices	the OSC reply message argument indices to match for failure
+	 *	@param	failArgMatches	the OSC reply message argument values to match for failure
+	 *	@param	timeout			the maximum amount of time in seconds to wait
+	 *	@return					the reply message or <code>null</code> if
+	 *							no reply was received in time
+	 *	
+	 *	@throws	IOException	if sending the message or receiving the reply fails
+	 */
+	public OSCMessage sendMsgSync( OSCMessage msg, String doneCmd, String failCmd,
+								   int[] doneArgIndices, Object[] doneArgMatches,
+								   int[] failArgIndices, Object[] failArgMatches,
+								   float timeout )
+	throws IOException
+	{
+		final SyncResponder	resp = new SyncResponder( doneCmd, failCmd, doneArgIndices, doneArgMatches, failArgIndices, failArgMatches );
 		
 		try {
 			synchronized( resp ) {
@@ -1223,7 +1252,7 @@ implements Constants, EventManager.Processor
 		finally {
 			resp.remove();
 		}
-		return resp.doneMsg;
+		return resp.replyMsg;
 	}
 
 	/**
@@ -1265,7 +1294,32 @@ implements Constants, EventManager.Processor
 	public OSCMessage sendBundleSync( OSCBundle bndl, String doneCmd, String failCmd, int argIdx, Object argMatch, float timeout )
 	throws IOException
 	{
-		final SyncResponder	resp = new SyncResponder( doneCmd, failCmd, argIdx, argMatch );
+		return sendBundleSync( bndl, doneCmd, failCmd, new int[] { argIdx }, new Object[] { argMatch },
+		                       new int[ 0 ], new Object[ 0 ], timeout );
+	}
+
+	/**
+	 *	Sends a bundle and waits for a corresponding reply or failure message
+	 *	from the server.
+	 *
+	 *	@param	bndl		the bundle to send
+	 *	@param	doneCmd		the OSC command with which the server replies upon success
+	 *	@param	failCmd		the OSC command with which the server replies upon failure (can be <code>null</code>)
+	 *	@param	doneArgIndices	the OSC reply message argument indices to match
+	 *	@param	doneArgMatches	the OSC reply message argument values to match
+	 *	@param	timeout		the maximum amount of time in seconds to wait
+	 *	@return				the reply message or <code>null</code> if
+	 *						no reply was received in time
+	 *	
+	 *	@throws	IOException	if sending the bundle or receiving the reply fails
+	 */
+	public OSCMessage sendBundleSync( OSCBundle bndl, String doneCmd, String failCmd,
+									  int[] doneArgIndices, Object[] doneArgMatches,
+									  int[] failArgIndices, Object[] failArgMatches,
+									  float timeout )
+	throws IOException
+	{
+		final SyncResponder	resp = new SyncResponder( doneCmd, failCmd, doneArgIndices, doneArgMatches, failArgIndices, failArgMatches );
 		
 		try {
 			synchronized( resp ) {
@@ -1278,7 +1332,7 @@ implements Constants, EventManager.Processor
 		finally {
 			resp.remove();
 		}
-		return resp.doneMsg;
+		return resp.replyMsg;
 	}
 
 	/**
@@ -1521,7 +1575,7 @@ resetBufferAutoInfo();
 			final OSCMessage msg = quitMsg();
 		
 			for( int i = 0; i < 16; i++ ) {
-				if( sendMsgSync( msg, 0.25f )) {
+				if( sendMsgSync( msg, 0.5f )) {
 					cleanUpAfterQuit();
 					return true;
 				}
@@ -1892,48 +1946,69 @@ resetBufferAutoInfo();
 	private class SyncResponder
 	implements OSCListener
 	{
-//		private boolean					done	= false;
-		protected volatile OSCMessage	doneMsg	= null;
-		private final OSCResponderNode	resp1;
-		private final OSCResponderNode	resp2;
-		private final int				argIdx;
-		private final Object			argMatch;
+		protected volatile OSCMessage	replyMsg	= null;
+		private final OSCResponderNode	doneResp;
+		private final OSCResponderNode	failResp;
+		private final String			doneCmdName;
+		private final int[]				doneArgIndices;
+		private final Object[]			doneArgMatches;
+		private final int				doneMinArgNum;
+		private final String			failCmdName;
+		private final int[]				failArgIndices;
+		private final Object[]			failArgMatches;
+		private final int				failMinArgNum;
 		
-//		private SyncResponder( String cmdName, int argIdx, Object argMatch )
+//		protected SyncResponder( String doneCmdName, String failCmdName, int argIdx, Object argMatch )
 //		throws IOException
 //		{
-//			this.argIdx		= argIdx;
-//			this.argMatch	= argMatch;
-//			resp1			= new OSCResponderNode( getAddr(), cmdName, this );
-//			resp2			= null;
+//			this( doneCmdName, failCmdName, new int[] { argIdx }, new Object[] { argMatch });
 //		}
 
-		protected SyncResponder( String doneCmdName, String failCmdName, int argIdx, Object argMatch )
+		protected SyncResponder( String doneCmdName, String failCmdName,
+								 int[] doneArgIndices, Object[] doneArgMatches,
+								 int[] failArgIndices, Object[] failArgMatches )
 		throws IOException
 		{
-			this.argIdx		= argIdx;
-			this.argMatch	= argMatch;
-			resp1			= new OSCResponderNode( enc_this, doneCmdName, this );
-			resp2			= failCmdName == null ? null : new OSCResponderNode( enc_this, failCmdName, this );
+			this.doneCmdName	= doneCmdName;
+			this.doneArgIndices	= doneArgIndices;
+			this.doneArgMatches	= doneArgMatches;
+			this.failCmdName	= failCmdName;
+			this.failArgIndices	= failArgIndices;
+			this.failArgMatches	= failArgMatches;
+			
+			int i = 0;
+			for( int j = 0; j < doneArgIndices.length; j++ ) i = Math.max( i, doneArgIndices[ j ]);
+			doneMinArgNum = i;
+			doneResp			= new OSCResponderNode( enc_this, doneCmdName, this );
+			
+			if( failCmdName != null ) {
+				i = 0;
+				for( int j = 0; j < failArgIndices.length; j++ ) i = Math.max( i, failArgIndices[ j ]);
+				failMinArgNum	= i;
+				failResp		= new OSCResponderNode( enc_this, failCmdName, this );
+			} else {
+				failMinArgNum	= 0;
+				failResp		= null;
+			}
 		}
 		
 		protected void add()
 		throws IOException
 		{
-			resp1.add();
-			if( resp2 != null ) resp2.add();
+			doneResp.add();
+			if( failResp != null ) failResp.add();
 		}
 
 		protected void remove()
 		{
 			try {
-				resp1.remove();
+				doneResp.remove();
 			}
 			catch( IOException e1 ) {
 				printError( "SyncResponder.remove", e1 );
 			}
 			try {
-				if( resp2 != null ) resp2.remove();
+				if( failResp != null ) failResp.remove();
 			}
 			catch( IOException e1 ) {
 				printError( "SyncResponder.remove", e1 );
@@ -1942,15 +2017,40 @@ resetBufferAutoInfo();
 		
 		public void messageReceived( OSCMessage msg, SocketAddress sender, long time )
 		{
-//			System.out.println( "message received: " + msg.getName() + ", " + msg.getArg( 0 ));
-			
-			if( (msg.getArgCount() > argIdx) && (msg.getArg( argIdx ).equals( argMatch ))) {
-//				done	= msg.getName().equals( resp1.getCommandName() );
-				doneMsg	= msg;
-				remove();
-				synchronized( this ) {
-					this.notifyAll();
-				}
+			if( msg.getName().equals( doneCmdName )) {
+				doneMessageReceived( msg );
+			} else if( msg.getName().equals( failCmdName )) {
+				failMessageReceived( msg );
+			} else {
+				assert false : msg.getName();
+			}
+		}
+		
+		private void doneMessageReceived( OSCMessage msg )
+		{
+			if( msg.getArgCount() < doneMinArgNum ) return;
+
+			for( int i = 0; i < doneArgIndices.length; i++ ) {
+				if( !msg.getArg( doneArgIndices[ i ]).equals( doneArgMatches[ i ])) return;
+			}
+			replyMsg	= msg;
+			remove();
+			synchronized( this ) {
+				this.notifyAll();
+			}
+		}
+
+		private void failMessageReceived( OSCMessage msg )
+		{
+			if( msg.getArgCount() < failMinArgNum ) return;
+
+			for( int i = 0; i < failArgIndices.length; i++ ) {
+				if( !msg.getArg( failArgIndices[ i ]).equals( failArgMatches[ i ])) return;
+			}
+			replyMsg = msg;
+			remove();
+			synchronized( this ) {
+				this.notifyAll();
 			}
 		}
 	}
