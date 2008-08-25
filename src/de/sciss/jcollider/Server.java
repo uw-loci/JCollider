@@ -41,6 +41,7 @@
  *		24-Jul-06	uses updated server options with variable block allocator class ; alive thread robust against unresponsive server
  *					; added extended sendMsgSync and sendBundleSync methods ; responders recreated after quit
  *		01-Oct-06	uses new NetUtil and allows for TCP mode
+ *		25-Aug-08	OSC buffer size increased to 64K
  */
 
 package de.sciss.jcollider;
@@ -102,7 +103,7 @@ import de.sciss.net.OSCListener;
  *						regarded thread safe
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.33, 12-Jul-08
+ *  @version	0.33, 25-Aug-08
  */
 public class Server
 implements Constants, EventManager.Processor
@@ -234,6 +235,7 @@ implements Constants, EventManager.Processor
 			
 			c			= OSCClient.newUsing( options.getProtocol(), 0, host.isLoopbackAddress() );
 //			c.start();
+			c.setBufferSize( 0x10000 );
 			multi		= new OSCMultiResponder( c );
 //			dch			= (DatagramChannel) multi.getChannel(); // XXX
 //			trns		= new OSCTransmitter( dch, addr );
