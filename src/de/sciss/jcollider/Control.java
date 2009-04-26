@@ -58,7 +58,7 @@ package de.sciss.jcollider;
  *	objects.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.25, 15-Oct-05
+ *  @version	0.33, 21-Apr-09
  */
 public class Control
 extends UGen
@@ -67,13 +67,23 @@ extends UGen
 
 	private Control( String[] names, Object rate, float[] values )
 	{
-		this( "Control", rate, names.length, new UGenInput[0], 0 );
+		this( "Control", rate, values.length, new UGenInput[0], 0 );
 	
-		for( int i = 0; i < names.length; i++ ) {
+		for( int i = 0; i < values.length; i++ ) {
 			descs[ i ] = new ControlDesc( names[ i ], rate, values[ i ], 0.0f );
 		}
 	}
+
+	private Control( String name, Object rate, float[] values )
+	{
+		this( "Control", rate, values.length, new UGenInput[0], 0 );
 	
+		descs[ 0 ] = new ControlDesc( name, rate, values[ 0 ], 0.0f );
+		for( int i = 1; i < values.length; i++ ) {
+			descs[ i ] = new ControlDesc( null, rate, values[ i ], 0.0f );
+		}
+	}
+
 	protected Control( String name, Object rate, int numOutputs, UGenInput[] inputs, int specialIndex )
 	{
 		super( name, rate, createOutputRates( numOutputs, rate ), inputs, specialIndex );
@@ -119,12 +129,17 @@ extends UGen
 	 */
 	public static Control ir( String name, float defaultValue )
 	{
-		return new Control( new String[] { name }, kScalarRate, new float[] { defaultValue });
+		return new Control( name, kScalarRate, new float[] { defaultValue });
 	}
 
 	public static Control ir( String[] names, float[] values )
 	{
 		return new Control( names, kScalarRate, values );
+	}
+
+	public static Control ir( String name, float[] values )
+	{
+		return new Control( name, kScalarRate, values );
 	}
 
 	public static GraphElem kr( String name )
@@ -134,11 +149,16 @@ extends UGen
 
 	public static Control kr( String name, float defaultValue )
 	{
-		return new Control( new String[] { name }, kControlRate, new float[] { defaultValue });
+		return new Control( name, kControlRate, new float[] { defaultValue });
 	}
 
 	public static Control kr( String[] names, float[] values )
 	{
 		return new Control( names, kControlRate, values );
+	}
+
+	public static Control kr( String name, float[] values )
+	{
+		return new Control( name, kControlRate, values );
 	}
 }
