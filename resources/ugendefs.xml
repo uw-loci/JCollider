@@ -39,7 +39,7 @@
 		<arg name="bufnum" />
 	</ugen>
 
-	<ugen class="NumRunningSynths" rates="scalar" />
+	<ugen class="NumRunningSynths" rates="control scalar" />
 
 	<ugen class="NumBuffers" rates="scalar" />
 
@@ -54,6 +54,8 @@
 	<ugen class="SubsampleOffset" rates="scalar" />
 
 	<ugen class="ControlRate" rates="scalar" />
+
+	<ugen class="ControlDur" rates="scalar" />
 
 	<ugen class="RadiansPerSample" rates="scalar" />
 
@@ -84,7 +86,7 @@
 		<special idx="11" name="&gt;=" />
 		<special idx="12" name="min" />
 		<special idx="13" name="max" />
-		<special idx="14" name="&" />
+		<special idx="14" name="&amp;" />
 		<special idx="15" name="|" />
 		<special idx="16" name="^" />
 		<special idx="17" name="lcm" />
@@ -179,21 +181,21 @@
 		<special idx="53" name="scurve" />
 	</ugen>
 
-	<ugen class="TBall" rates="audio">
+	<ugen class="TBall" rates="audio control">
 		<arg name="in" def="0.0" />
 		<arg name="g" def="10" />
 		<arg name="damp" def="0" />
 		<arg name="friction" def="0.01" />
 	</ugen>
 	
-	<ugen class="Ball" rates="audio">
+	<ugen class="Ball" rates="audio control">
 		<arg name="in" def="0.0" />
 		<arg name="g" def="10" />
 		<arg name="damp" def="0" />
 		<arg name="friction" def="0.01" />
 	</ugen>
 	
-	<ugen class="Spring" rates="audio">
+	<ugen class="Spring" rates="audio control">
 		<arg name="in" def="0.0" />
 		<arg name="spring" def="0" />
 		<arg name="damp" def="0" />
@@ -205,6 +207,57 @@
 		<arg name="time" def="0.1" />
 		<arg name="doneAction" def="0" />
 		<outputs type="fixed" val="0" />
+	</ugen>
+	
+	<ugen class="BLowPass" rates="audio">
+		<arg name="in" />
+		<arg name="freq" def="1200.0" />
+		<arg name="rq" def="1.0" />
+	</ugen>
+	
+	<ugen class="BHiPass" rates="audio">
+		<arg name="in" />
+		<arg name="freq" def="1200.0" />
+		<arg name="rq" def="1.0" />
+	</ugen>
+	
+	<ugen class="BAllPass" rates="audio">
+		<arg name="in" />
+		<arg name="freq" def="1200.0" />
+		<arg name="rq" def="1.0" />
+	</ugen>
+	
+	<ugen class="BBandPass" rates="audio">
+		<arg name="in" />
+		<arg name="freq" def="1200.0" />
+		<arg name="bw" def="1.0" />
+	</ugen>
+	
+	<ugen class="BBandStop" rates="audio">
+		<arg name="in" />
+		<arg name="freq" def="1200.0" />
+		<arg name="bw" def="1.0" />
+	</ugen>
+	
+	<ugen class="BPeakEQ" rates="audio">
+		<arg name="in" />
+		<arg name="freq" def="1200.0" />
+		<arg name="rq" def="1.0" />
+		<arg name="db" def="0.0" />
+	</ugen>
+	
+	<ugen class="BLowShelf" rates="audio">
+		<arg name="in" />
+		<arg name="freq" def="1200.0" />
+		<arg name="rs" def="1.0" />
+		<arg name="db" def="0.0" />
+	</ugen>
+	
+	<ugen class="BHiShelf" rates="audio">
+		<arg name="in" />
+		<arg name="freq" def="1200.0" />
+		<arg name="rs" def="1.0" />
+		<arg name="db" def="0.0" />
 	</ugen>
 	
 	<ugen class="Formlet" rates="audio control">
@@ -220,7 +273,7 @@
 		<arg name="decaytime" def="1.0" />
 	</ugen>
 
-	<ugen class="SOS" rates="audio">
+	<ugen class="SOS" rates="audio control">
 		<arg name="in" def="0.0" />
 		<arg name="a0" def="0.0" />
 		<arg name="a1" def="0.0" />
@@ -229,7 +282,7 @@
 		<arg name="b2" def="0.0" />
 	</ugen>
 
-	<ugen class="FOS" rates="audio">
+	<ugen class="FOS" rates="audio control">
 		<arg name="in" def="0.0" />
 		<arg name="a0" def="0.0" />
 		<arg name="a1" def="0.0" />
@@ -326,6 +379,24 @@
 		<arg name="lagTime" def="0.1" />
 	</ugen>
 
+	<ugen class="LagUD" rates="audio control">
+		<arg name="in" def="0.0" />
+		<arg name="lagTimeU" def="0.1" />
+		<arg name="lagTimeD" def="0.1" />
+	</ugen>
+	
+	<ugen class="Lag2UD" rates="audio control">
+		<arg name="in" def="0.0" />
+		<arg name="lagTimeU" def="0.1" />
+		<arg name="lagTimeD" def="0.1" />
+	</ugen>
+
+	<ugen class="Lag3UD" rates="audio control">
+		<arg name="in" def="0.0" />
+		<arg name="lagTimeU" def="0.1" />
+		<arg name="lagTimeD" def="0.1" />
+	</ugen>
+
 	<ugen class="Ramp" rates="audio control">
 		<arg name="in" def="0.0" />
 		<arg name="lagTime" def="0.1" />
@@ -391,6 +462,12 @@
 		<arg name="bwr" def="1.0" />
 	</ugen>
 
+	<ugen class="MoogFF" rates="audio control">
+		<arg name="freq" def="100" />
+		<arg name="gain" def="2" />
+		<arg name="reset" def="0" />
+	</ugen>
+
 	<ugen class="Gendy3" rates="audio control">
 		<arg name="ampdist" def="1" />
 		<arg name="durdist" def="1" />
@@ -448,6 +525,100 @@
 		<arg name="envelope" type="array" />
 	</ugen>
 
+	<ugen class="IEnvGen" rates="audio control">
+		<arg name="index" def="0" />
+		<arg name="envelope" type="array" />
+	</ugen>
+	
+	<ugen class="GVerb" rates="audio">
+		<arg name="in" />
+		<arg name="roomsize" def="10" />
+		<arg name="revtime" def="3" />
+		<arg name="damping" def="0.5" />
+		<arg name="inputbw" def="0.5" />
+		<arg name="spread" def="15" />
+		<arg name="drylevel" def="1" />
+		<arg name="earlyreflevel" def="0.7" />
+		<arg name="taillevel" def="0.5" />
+		<arg name="maxroomsize" def="300" />
+		<outputs type="fixed" val="2" />
+	</ugen>
+	
+	<ugen class="FreeVerb" rates="audio">
+		<arg name="in" />
+		<arg name="mix" def="0.33" />
+		<arg name="room" def="0.5" />
+		<arg name="damp" def="0.5" />
+	</ugen>
+	
+	<ugen class="FreeVerb2" rates="audio">
+		<arg name="in" />
+		<arg name="in2" />
+		<arg name="mix" def="0.33" />
+		<arg name="room" def="0.5" />
+		<arg name="damp" def="0.5" />
+		<outputs type="fixed" val="2" />
+	</ugen>
+
+	<ugen class="BeatTrack" rates="control">
+		<arg name="chain" />
+		<arg name="lock" def="0" />
+	</ugen>
+
+	<ugen class="Loudness" rates="control">
+		<arg name="chain" />
+		<arg name="smask" def="0.25" />
+		<arg name="tmask" def="1" />
+	</ugen>
+
+	<ugen class="Onsets" rates="control">
+		<arg name="chain" />
+		<arg name="threshold" def="0.5" />
+		<arg name="odftype" def="3" />
+		<arg name="relaxtime" def="1" />
+		<arg name="floor" def="0.1" />
+		<arg name="mingap" def="10" />
+		<arg name="medianspan" def="11" />
+		<arg name="whtype" def="1" />
+		<arg name="rawodf" def="0" />
+	</ugen>
+
+	<ugen class="KeyTrack" rates="control">
+		<arg name="chain" />
+		<arg name="keydecay" def="2.0" />
+		<arg name="chromaleak" def="0.5" />
+	</ugen>
+
+	<ugen class="MFCC" rates="control">
+		<arg name="in" />
+		<arg name="numcoeff" def="13" />
+		<outputs type="arg" val="1" />
+	</ugen>
+
+	<ugen class="BeatTrack2" rates="control">
+		<arg name="busindex" />
+		<arg name="numfeatures" />
+		<arg name="windowsize" def="2.0" />
+		<arg name="phaseaccuracy" def="0.02" />
+		<arg name="lock" def="0" />
+		<arg name="weightingscheme" def="-2.1" />
+		<outputs type="fixed" val="6" />
+	</ugen>
+
+	<ugen class="SpecFlatness" rates="control">
+		<arg name="buffer" />
+	</ugen>
+
+	<ugen class="SpecPcile" rates="control">
+		<arg name="buffer" />
+		<arg name="fraction" def="0.5" />
+		<arg name="interpolate" def="0" />
+	</ugen>
+
+	<ugen class="SpecCentroid" rates="control">
+		<arg name="buffer" />
+	</ugen>
+	
 	<ugen class="Free" rates="control">
 		<arg name="trig" />
 		<arg name="id" />
@@ -513,6 +684,12 @@
 		<arg name="iphase" def="0.0" />
 	</ugen>
 
+	<ugen class="FFTTrigger" rates="control">
+		<arg name="buffer" />
+		<arg name="hop" def="0.5" />
+		<arg name="polar" def="0.0" />
+	</ugen>
+	
 	<ugen class="PV_BinScramble" rates="control">
 		<arg name="buffer" />
 		<arg name="wipe" def="0.0" />
@@ -562,6 +739,22 @@
 		<arg name="bufferA" />
 		<arg name="bufferB" />
 	</ugen>
+	
+	<ugen class="PV_Copy" rates="control">
+		<arg name="bufferA" />
+		<arg name="bufferB" />
+	</ugen>
+	
+	<ugen class="PV_Div" rates="control">
+		<arg name="bufferA" />
+		<arg name="bufferB" />
+	</ugen>
+	
+	<ugen class="PV_MagDiv" rates="control">
+		<arg name="bufferA" />
+		<arg name="bufferB" />
+		<arg name="zeroed" def="0.0001" />
+	</ugen>
 
 	<ugen class="PV_Add" rates="control">
 		<arg name="bufferA" />
@@ -608,6 +801,10 @@
 		<arg name="buffer" />
 	</ugen>
 
+	<ugen class="PV_Conj" rates="control">
+		<arg name="buffer" />
+	</ugen>
+	
 	<ugen class="PV_PhaseShift270" rates="control">
 		<arg name="buffer" />
 	</ugen>
@@ -657,8 +854,10 @@
 		<arg name="threshold" def="0.0" />
 	</ugen>
 
-	<ugen class="IFFT" rates="audio">
+	<ugen class="IFFT" rates="audio control">
 		<arg name="buffer" />
+		<arg name="wintype" def="0" />
+		<arg name="winsize" def="0" />
 	</ugen>
 
 	<ugen class="FFT" rates="control">
@@ -689,9 +888,33 @@
 		<arg name="waittime" def="0.04" />
 	</ugen>
 
+	<ugen class="Convolution3" rates="audio control">
+		<arg name="in" />
+		<arg name="kernel" />
+		<arg name="trigger" def="0" />
+		<arg name="framesize" def="512" />
+	</ugen>
+	
+	<ugen class="StereoConvolution2L" rates="audio">
+		<arg name="in" />
+		<arg name="kernelL" />
+		<arg name="kernelR" />
+		<arg name="trigger" />
+		<arg name="framesize" def="512" />
+		<arg name="crossfade" def="1" />
+	</ugen>
+	
+	<ugen class="Convolution2L" rates="audio">
+		<arg name="in" />
+		<arg name="kernel" />
+		<arg name="trigger" />
+		<arg name="framesize" def="512" />
+		<arg name="crossfade" def="1" />
+	</ugen>
+	
 	<ugen class="Convolution2" rates="audio">
 		<arg name="in" />
-		<arg name="bufnum" />
+		<arg name="kernel" />
 		<arg name="trigger" />
 		<arg name="framesize" def="512" />
 	</ugen>
@@ -932,6 +1155,16 @@
 		<arg name="in" def="0.0" />
 	</ugen>
 
+	<ugen class="IndexInBetween" rates="audio control">
+		<arg name="bufnum" />
+		<arg name="in" def="0.0" />
+	</ugen>
+
+	<ugen class="DetectIndex" rates="audio control">
+		<arg name="bufnum" />
+		<arg name="in" def="0.0" />
+	</ugen>
+	
 	<ugen class="TPulse" range="unipolar" rates="audio control">
 		<arg name="trig" def="0.0" />
 		<arg name="freq" def="440.0" />
@@ -980,6 +1213,14 @@
 		<arg name="iphase" def="0.0" />
 	</ugen>
 
+	<ugen class="LFGauss" rates="audio control">
+		<arg name="duration" def="1" />
+		<arg name="width" def="0.1" />
+		<arg name="iphase" def="0.0" />
+		<arg name="loop" def="1" />
+		<arg name="doneAction" def="0" />
+	</ugen>
+	
 	<ugen class="Formant" rates="audio">
 		<arg name="fundfreq" def="440.0" />
 		<arg name="formfreq" def="1760.0" />
@@ -1124,6 +1365,15 @@
 		<arg name="length" def="Infinity" />
 	</ugen>
 
+	<ugen class="Dstutter" rates="demand">
+		<arg name="n" />
+		<arg name="in" />
+	</ugen>
+	
+	<ugen class="Donce" rates="demand">
+		<arg name="in" />
+	</ugen>
+	
 	<ugen class="Dibrown" rates="demand">
 		<arg name="lo" />
 		<arg name="hi" />
@@ -1148,11 +1398,21 @@
 		<arg name="list" type="array" />
 	</ugen>
 
+	<ugen class="Dswitch" rates="demand">
+		<arg name="index" />
+		<arg name="list" type="array" />
+	</ugen>
+	
 	<ugen class="Dseq" rates="demand">
 		<arg name="repeats" def="1" />
 		<arg name="list" type="array" />
 	</ugen>
 
+	<ugen class="Dshuf" rates="demand">
+		<arg name="repeats" def="1" />
+		<arg name="list" type="array" />
+	</ugen>
+	
 	<ugen class="Dser" rates="demand">
 		<arg name="repeats" def="1" />
 		<arg name="list" type="array" />
@@ -1174,6 +1434,19 @@
 		<arg name="length" def="100" />
 	</ugen>
 
+	<ugen class="Dbufrd" rates="demand">
+		<arg name="bufnum" def="0" />
+		<arg name="phase" def="0.0" />
+		<arg name="loop" def="1.0" />
+	</ugen>
+	
+	<ugen class="Dbufwr" rates="demand">
+		<arg name="input" def="0.0" />
+		<arg name="bufnum" def="0" />
+		<arg name="phase" def="0.0" />
+		<arg name="loop" def="1.0" />
+	</ugen>
+	
 	<ugen class="Dseries" rates="demand">
 		<arg name="start" def="1" />
 		<arg name="step" def="1" />
@@ -1350,6 +1623,16 @@
 		<arg name="reset" def="0.0" />
 	</ugen>
 
+	<ugen class="RunningMin" rates="audio control">
+		<arg name="trig" def="0.0" />
+		<arg name="reset" def="0.0" />
+	</ugen>
+	
+	<ugen class="RunningMax" rates="audio control">
+		<arg name="trig" def="0.0" />
+		<arg name="reset" def="0.0" />
+	</ugen>
+	
 	<ugen class="Latch" rates="audio control">
 		<arg name="in" def="0.0" />
 		<arg name="trig" def="0.0" />
@@ -1470,17 +1753,62 @@
 	</ugen>
 -->
 
+	<ugen class="PartConv" rates="audio">
+		<arg name="in" />
+		<arg name="fftsize" />
+		<arg name="irbufnum" />
+	</ugen>
+	
+	<ugen class="Pluck" rates="audio">
+		<arg name="in" def="0.0" />
+		<arg name="trig" def="1.0" />
+		<arg name="maxdelaytime" def="0.2" />
+		<arg name="delaytime" def="0.2" />
+		<arg name="decaytime" def="1.0" />
+		<arg name="coef" def="0.5" />
+	</ugen>
+	
+	<ugen class="CheckBadValues" rates="audio control">
+		<arg name="in" def="0.0" />
+		<arg name="id" def="0" />
+		<arg name="post" def="2" />
+	</ugen>
+	
+	<ugen class="Hilbert" rates="audio">
+		<arg name="in" />
+		<outputs type="fixed" val="2" />
+	</ugen>
+	
+	<ugen class="FreqShift" rates="audio">
+		<arg name="in" />
+		<arg name="freq" def="0.0" />
+		<arg name="phase" def="0.0" />
+	</ugen>
+
 	<ugen class="DiskIn" rates="audio">
 		<arg name="bufnum" />
+		<arg name="loop" def="0" />
 		<outputs type="arg" />
 	</ugen>
 
+	<ugen class="VDiskIn" rates="audio">
+		<arg name="bufnum" />
+		<arg name="rate" def="1" />
+		<arg name="loop" def="0" />
+		<arg name="sendID" def="0" />
+		<outputs type="arg" />
+	</ugen>
+	
 	<ugen class="DiskOut" rates="audio">
 		<arg name="bufnum" />
 		<arg name="channelsArray" type="array" />
 		<outputs type="fixed" val="0" />
 	</ugen>
 
+	<ugen class="ClearBuf" rates="scalar">
+		<arg name="buf" />
+	</ugen>
+	
 	<!-- Tap : wrongly defined as a UGen subclass -->
 
 	<ugen class="ScopeOut" rates="audio control">
@@ -1489,7 +1817,7 @@
 		<outputs type="fixed" val="0" />
 	</ugen>
 
-	<ugen class="RecordBuf" rates="audio">
+	<ugen class="RecordBuf" rates="audio control">
 		<arg name="bufnum" def="0" />
 		<arg name="offset" def="0.0" />
 		<arg name="recLevel" def="1.0" />
@@ -1528,7 +1856,7 @@
 		<outputs type="arg" />
 	</ugen>
 	
-	<ugen class="PlayBuf" rates="audio">
+	<ugen class="PlayBuf" rates="audio control">
 		<arg name="bufnum" def="0" />
 		<arg name="rate" def="1.0" />
 		<arg name="trigger" def="1.0" />
@@ -1554,6 +1882,15 @@
 		<arg name="in" def="0.0" />
 	</ugen>
 
+	<ugen class="T2K" rates="control">
+		<arg name="in" def="0.0" />
+	</ugen>
+	
+	<ugen class="T2A" rates="audio">
+		<arg name="in" def="0.0" />
+		<arg name="offset" def="0" />
+	</ugen>
+	
 	<ugen class="AmpCompA" rates="audio control scalar">
 		<arg name="freq" def="1000" />
 		<arg name="root" def="0" />
@@ -1923,7 +2260,4 @@
 		<arg name="seed" def="56789" />
 		<outputs type="fixed" val="0" />
 	</ugen>
-
-	<!-- skipped : ImageWarp -->
-	<!-- skipped : XY -->
 </ugendefs>
