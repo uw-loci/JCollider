@@ -74,7 +74,7 @@ TD.when {
 </HEAD>
 <BODY>
 <h1>
-JCollider <small>-- version 0.32 (built 11-feb-08) --</small>
+JCollider <small>-- version 0.34 (built 18-jul-09) --</small>
 </h1>
 <h3>statement</h3>
 <p>
@@ -82,7 +82,7 @@ JCollider is a java library to build clients for the SuperCollider server archit
 </p>
 <h3>license</h3>
 <P>
-JCollider is (C)opyright 2005-2008 by Hanns Holger Rutz. All rights reserved. JCollider is released under the <A HREF="licenses/JCollider-License.txt">GNU General Public License</A> which protects your freedom and ensures that products built using this library are also free software. The software comes with absolutely no warranties.
+JCollider is (C)opyright 2005-2009 by Hanns Holger Rutz. All rights reserved. JCollider is released under the <A HREF="licenses/JCollider-License.txt">GNU General Public License</A> which protects your freedom and ensures that products built using this library are also free software. The software comes with absolutely no warranties.
 </P><P>
 To contact the author, send an email to <code>contact&nbsp;at&nbsp;sciss.de</code>.
 For project status, API and current version, visit <a href="http://www.sciss.de/jcollider/" class="ext">www.sciss.de/jcollider</a>.
@@ -104,8 +104,11 @@ The current version can be downloaded here:
 documentation
 </h3>
 <p>
-When you modify the sourcecode, you will want to re-create the javadoc files. To do so, open a terminal, <code>cd</code> into the JCollider folder and run the <code>makedoc.sh</code> file.
+Documentation comes in the form of JavaDoc. The generate the docs, open a terminal, <code>cd</code> into the JCollider folder and run:
 </P>
+<PRE>
+$ ant doc
+</PRE>
 <P>
 there is no real tutorial or manual at the moment, however if you are familiar with <code>sclang</code>, it is straight forward to get started. the API documentation (see below) is not yet complete but already quite robust.
 </P>
@@ -122,17 +125,17 @@ compilation / usage
 The downloaded archive comes already with a built version of JCollider, that is <code>build/JCollider.jar</code> to you may not need to compile it yourself.
 </P><P>
 The source code can be compiled using Eclipse SDK 3.2+ (<A HREF="http://www.eclipse.org" CLASS="ext">www.eclipse.org</A>) and Apache Ant 1.6.5+ (<A HREF="http://ant.apache.org/" CLASS="ext">ant.apache.org</A>). You need to install <A HREF="http://ant-contrib.sourceforge.net" CLASS="ext">Ant-Contrib</A> as well (first install Ant if you do not have it, then download Ant-Contrib and copy <code>ant-contrib.jar</code> into Ant's <code>lib</code> folder). The Eclipse project file is configured to run the regular Ant build file. You can make a clean build just with Ant from the terminal:
-</P><PRE>> ant clean jar
-> ant test
+</P><PRE>$ ant clean jar
+$ ant test
 </PRE>
 <P>
 The <code>&quot;test&quot;</code> will just launch the JCollider demo so you can see if the build works; you can leave away that task. By default, NetUtil is included in the resulting file <code>build/JCollider.jar</code>. If wish to link externally to it, you can build like this:
-</P><PRE>> ant -Dplain=true clean jar
+</P><PRE>$ ant -Dplain=true clean jar
 </PRE>
 <P>
 the original demo project is included in this build and can be executed as follows:
 </P>
-<PRE>> java -jar build/JCollider.jar --test1
+<PRE>$ java -jar build/JCollider.jar --test1
 </PRE>
 <P>
 the demo opens two frames, one containing a list of synth defs, the other one being a small server window just like you know from <code>sclang</code>. first check, that the path name to the application is correct, alternatively start the server manually before launching the demo. now select a synth definition from the tables and press the play button. to stop all synths, press the stop button. to view the synth def, press one of the next two buttons. to see a tree of all known nodes, press the right most button.
@@ -153,6 +156,16 @@ to-do / known issues
 <LI>add GUI panel for server options</LI>
 </UL>
 <h3>Change History</h3>
+<h4>v0.34 (jul 2009 - SVN rev. 16)</h4>
+<UL>
+<LI>Updated ugen infos from latest SuperCollider</LI>
+<LI>Control: possible to create multiinput control with just one name</LI>
+<LI>Server: default bufsize 64k, better boot thread quitting</LI>
+<LI>Synth: get(n)(Msg) added, grain added</LI>
+<LI>Fixed some threading issues</LI>
+<LI>Uses ScissLib now</LI>
+<LI>Uses ant doc target</LI>
+</UL>
 <h4>v0.32 (feb 2008 - SVN rev. 3)</h4>
 <UL>
 <LI>ServerOptions: added verbosity and rendezvous</LI>

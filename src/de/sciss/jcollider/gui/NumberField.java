@@ -362,7 +362,6 @@ implements EventManager.Processor //, PropertyChangeListener
 	 *  the gadgets content.
 	 *
 	 *  @param  listener	the <code>NumberListener</code> to register
-	 *  @see	de.sciss.jcollider.EventManager#addListener( Object )
 	 */
 	public void addListener( NumberListener listener )
 	{
@@ -379,7 +378,6 @@ implements EventManager.Processor //, PropertyChangeListener
 	 *  from receiving number change events.
 	 *
 	 *  @param  listener	the <code>NumberListener</code> to unregister
-	 *  @see	de.sciss.jcollider.EventManager#removeListener( Object )
 	 */
 	public void removeListener( NumberListener listener )
 	{
