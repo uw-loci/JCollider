@@ -80,7 +80,7 @@ import java.util.ArrayList;
  *				should be re-invented.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.31, 08-Oct-07
+ *  @version	0.35, 19-Sep-09
  */
 public class UGen
 implements Constants, GraphElem
@@ -425,6 +425,11 @@ implements Constants, GraphElem
 		return UGen.construct( name, kAudioRate, -1, new GraphElem[] { in1, in2, in3, in4, in5 });
 	}
 
+	public static GraphElem ar( String name, GraphElem in1, GraphElem in2, GraphElem in3, GraphElem in4, GraphElem in5, GraphElem in6 )
+	{
+		return UGen.construct( name, kAudioRate, -1, new GraphElem[] { in1, in2, in3, in4, in5, in6 });
+	}
+	
 //	public static GraphElem ar( String name, Object[] inputs )
 //	{
 //		return UGen.construct( name, kAudioRate, -1, inputs );
@@ -489,6 +494,11 @@ implements Constants, GraphElem
 	public static GraphElem kr( String name, GraphElem in1, GraphElem in2, GraphElem in3, GraphElem in4, GraphElem in5 )
 	{
 		return UGen.construct( name, kControlRate, -1, new GraphElem[] { in1, in2, in3, in4, in5 });
+	}
+
+	public static GraphElem kr( String name, GraphElem in1, GraphElem in2, GraphElem in3, GraphElem in4, GraphElem in5, GraphElem in6 )
+	{
+		return UGen.construct( name, kControlRate, -1, new GraphElem[] { in1, in2, in3, in4, in5, in6 });
 	}
 
 //	public static GraphElem kr( String name, Object[] inputs )
@@ -662,6 +672,7 @@ implements Constants, GraphElem
 		UGenInput[]				ins;
 		int						chanExp		= 1;	// channel expansion : output numchan = max( each input's numchan)
 		int						numArgs		= ui.args.length;
+		int						numIns		= inputs.length;
 		int						specialIndex= 0;
 		int						i, j;
 		GraphElem				graph;
@@ -671,14 +682,15 @@ implements Constants, GraphElem
 		if( (numArgs > 0) && (ui.args[ numArgs - 1 ].isArray) ) {
 			hasArray	= true;
 			numArgs--;
-			args		= new ArrayList();	// don't know big it will grow
+			numIns--;
+			args		= new ArrayList( numArgs + inputs[ numIns ].getNumOutputs() );
 		} else {
 			hasArray	= false;
 			args		= new ArrayList( numArgs );
 		}
 		
 		// fill in the non-array args
-		for( i = 0; (i < numArgs) && (i < inputs.length); i++ ) {
+		for( i = 0; (i < numArgs) && (i < numIns); i++ ) {
 			ins		= inputs[ i ].asUGenInputs();
 			chanExp = Math.max( chanExp, ins.length );	// examine the channel expansion
 			args.add( ins );
@@ -694,7 +706,7 @@ implements Constants, GraphElem
 		}
 		// fill in array elements
 		if( hasArray ) {
-			graph	= inputs[ numArgs ];
+			graph	= inputs[ numIns ]; // note: numIns has been decreased by one
 			for( i = 0; i < graph.getNumOutputs(); i++ ) {
 				ins		= graph.getOutput( i ).asUGenInputs();
 				chanExp = Math.max( chanExp, ins.length );

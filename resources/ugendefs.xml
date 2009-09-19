@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <!DOCTYPE ugendefs SYSTEM "http://www.sciss.de/jcollider/ugendefs.dtd">
+<!-- last mod: 19-sep-09 sciss -->
 <ugendefs>
 	<ugen class="PitchShift" rates="audio">
 		<arg name="in" def="0.0" />
@@ -206,7 +207,7 @@
 		<arg name="amp" def="0.0001" />
 		<arg name="time" def="0.1" />
 		<arg name="doneAction" def="0" />
-		<outputs type="fixed" val="0" />
+<!--	<outputs type="fixed" val="0" /> -->
 	</ugen>
 	
 	<ugen class="BLowPass" rates="audio">
@@ -1802,7 +1803,7 @@
 	<ugen class="DiskOut" rates="audio">
 		<arg name="bufnum" />
 		<arg name="channelsArray" type="array" />
-		<outputs type="fixed" val="0" />
+<!--	<outputs type="fixed" val="0" /> -->
 	</ugen>
 
 	<ugen class="ClearBuf" rates="scalar">

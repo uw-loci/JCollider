@@ -468,6 +468,11 @@ implements Constants, Comparable
 				raf.writeByte( info.outputType );
 				raf.writeShort( info.outputVal );
 				raf.writeFloat( info.outputMul );
+				
+//if( info.className.equals( "DiskOut" )) {
+//	System.out.println( "DiskOut: outputType = " + info.outputType + "; outputVal = " + info.outputVal + "; outputMul = " + info.outputMul );
+//}
+				
 				raf.writeShort( info.args.length );
 				for( int j = 0; j < info.args.length; j++ ) {
 					raf.writeUTF( info.args[ j ].name );
