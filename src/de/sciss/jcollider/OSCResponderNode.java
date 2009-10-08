@@ -54,7 +54,7 @@ import de.sciss.net.OSCMessage;
  *	and <code>OSCMultiResponder</code>). So you may need to update old code.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.33, 08-Apr-08
+ *  @version	0.36, 08-Oct-09
  */
 public class OSCResponderNode
 implements OSCListener	// , Runnable
@@ -62,7 +62,7 @@ implements OSCListener	// , Runnable
 //	private final InetSocketAddress		addr;
 //	private final Server				server;
 	private final String				cmdName;
-	private final OSCListener			action;
+	private final Action				action;
 	private volatile boolean			removeWhenDone	= false;
 	private volatile boolean			listening		= false;		
 
@@ -76,7 +76,7 @@ implements OSCListener	// , Runnable
 	 *	for messages coming in from the given server.
 	 *	Filters out messages different from
 	 *	the specified command name. Upon reception,
-	 *	the provided action is invoked.
+	 *	the provided OSCListener is invoked.
 	 *	<p>
 	 *	After creating the responder, the <code>add</code>
 	 *	method has to be called separately to actually start
@@ -97,7 +97,43 @@ implements OSCListener	// , Runnable
 	 *	@see	Server
 	 *	@see	#add()
 	 */
-	public OSCResponderNode( Server s, String cmdName, OSCListener action )
+	public OSCResponderNode( final Server s, String cmdName, final OSCListener action )
+	{
+		this( s, cmdName, new Action() {
+			public void respond( OSCResponderNode node, OSCMessage msg, long time )
+			{
+				action.messageReceived( msg, s.getAddr(), time );
+			}
+		});
+	}
+	
+	/**
+	 *	Creates a new responder node to listen
+	 *	for messages coming in from the given server.
+	 *	Filters out messages different from
+	 *	the specified command name. Upon reception,
+	 *	the provided action is invoked.
+	 *	<p>
+	 *	After creating the responder, the <code>add</code>
+	 *	method has to be called separately to actually start
+	 *	the listening process.
+	 *
+	 *	@param	s			server of incoming messages
+	 *	@param	cmdName		name of the OSC command at whose
+	 *						arrival the action is invoked
+	 *	@param	action		the action's <code>respond</code>
+	 *						method is called upon message reception.
+	 *						Note that just as specified in the
+	 *						<code>OSCListener</code> interface, the action
+	 *						should not assume to be in any particular thread.
+	 *						The current implementation calls the action in the
+	 *						OSC listening thread, but this is not guaranteed.
+	 *						Calls to Swing components should be deferred appropriately.
+	 *
+	 *	@see	Server
+	 *	@see	#add()
+	 */
+	public OSCResponderNode( Server s, String cmdName, Action action )
 	{
 		this.cmdName	= cmdName;
 		this.action		= action;
@@ -185,18 +221,13 @@ implements OSCListener	// , Runnable
 	{
 		if( listening ) {
 			try {
-				action.messageReceived( msg, sender, time );
+				action.respond( this, msg, time );
 			}
 			catch( Exception e1 ) {
 				e1.printStackTrace( Server.getPrintStream() );
 			}
 			if( removeWhenDone ) {
-				try {
-					remove();	// OSCMultiResponder will take care of thread issues
-				}
-				catch( IOException e1 ) {
-					e1.printStackTrace( Server.getPrintStream() );
-				}
+				remove();	// OSCMultiResponder will take care of thread issues
 			}
 		}
 	}
@@ -207,11 +238,12 @@ implements OSCListener	// , Runnable
 	 *	this method does nothing.
 	 *
 	 *	@return		the responder node (for convenience)
+	 *	@throws		IOException	if there was a problem
 	 *
 	 *	@see		#add()
 	 */
 	public OSCResponderNode remove()
-	throws IOException
+//	throws IOException
 	{
 		synchronized( sync ) {
 			listening = false;
@@ -220,8 +252,12 @@ implements OSCListener	// , Runnable
 		}
 	}
 	
-//	// ----------- internal classes -----------
-//
+	// ----------- internal classes -----------
+
+	public interface Action {
+		public void respond( OSCResponderNode node, OSCMessage msg, long time );
+	}
+	
 //	private static class IncomingMessage
 //	{
 //		private final OSCMessage		msg;

@@ -42,7 +42,6 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -54,7 +53,6 @@ import javax.swing.Timer;
 
 import de.sciss.app.BasicEvent;
 import de.sciss.app.EventManager;
-import de.sciss.net.OSCListener;
 import de.sciss.net.OSCMessage;
 import de.sciss.net.OSCPacket;
 
@@ -82,7 +80,7 @@ import de.sciss.net.OSCPacket;
  *						one active node watcher at a time
  */
 public class NodeWatcher
-implements EventManager.Processor, OSCListener, Constants, Runnable
+implements EventManager.Processor, OSCResponderNode.Action, Constants, Runnable
 {
 	/**
 	 *	Set this to <code>true</code> for debugging
@@ -585,13 +583,13 @@ implements EventManager.Processor, OSCListener, Constants, Runnable
 		if( VERBOSE ) System.err.println( "NodeWatcher.nodeMove( " + node + " )" );
 	}
 
-// ----------- OSCListener interface -----------
+// ----------- OSCResponderNode.Action interface -----------
 
 	/**
 	 *	This method is part of the implementation of the 
-	 *	OSCListener interface. Do not call this method.
+	 *	OSCResponderNode.Action interface. Do not call this method.
 	 */
-	public void messageReceived( OSCMessage msg, SocketAddress addr, long time )
+	public void respond( OSCResponderNode r, OSCMessage msg, long time )
 	{
 		if( dumpMode == kDumpText ) {
 			OSCPacket.printTextOn( Server.getPrintStream(), msg );

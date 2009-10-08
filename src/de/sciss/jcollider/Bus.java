@@ -36,7 +36,10 @@
 
 package de.sciss.jcollider;
 
+import java.io.IOException;
 import java.io.PrintStream;
+
+import de.sciss.net.OSCMessage;
 
 /**
  *	Mimics SCLang's Bus class,
@@ -185,64 +188,316 @@ implements Constants
 	{
 		this.index	= index;
 	}
+	
+	// for mono
+	public void set( float value )
+	throws IOException
+	{
+		getServer().sendMsg( setMsg( value ));
+	}
 
-//	set { arg ... values; // shouldn't be larger than this.numChannels
-//		server.sendBundle(nil,(["/c_set"] 
-//			++ values.collect({ arg v,i; [index + i ,v] }).flat));
-//	}
-//	setMsg { arg ... values;
-//		^["/c_set"] 
-//			++ values.collect({ arg v,i; [index + i ,v] }).flat
-//	}
-//	
-//	setn { arg values;
-//		// could throw an error if values.size > numChannels
-//		server.sendBundle(nil,
-//			["/c_setn",index,values.size] ++ values);
-//	}
-//	setnMsg { arg values;
-//		^["/c_setn",index,values.size] ++ values;
-//	}
-//	get { arg action;
-//		OSCpathResponder(server.addr,['/c_set',index], { arg time, r, msg; 
-//			action.value(msg.at(2)); r.remove }).add;
-//		server.listSendMsg(["/c_get",index]);
-//	}	
-//	getn { arg count, action;
-//		OSCpathResponder(server.addr,['/c_setn',index],{arg time, r, msg; 
-//			action.value(msg.copyToEnd(3)); r.remove } ).add; 
-//		server.listSendMsg(["/c_getn",index, count]);
-//	}
-//	getMsg {
-//		^["/c_get",index];
-//	}
-//	getnMsg { arg count, action;
-//		^["/c_getn",index, count ? numChannels];
-//	}
-//
-//	fill { arg value,numChans;
-//		// could throw an error if numChans > numChannels
-//		server.sendBundle(nil,
-//			["/c_fill",index,numChans,value]);
-//	}
-//	
-//	fillMsg { arg value;
-//		^["/c_fill",index,numChannels,value];
-//	}
-//
+	public void set( int[] offsets, float[] values )
+	throws IOException
+	{
+		getServer().sendMsg( setMsg( offsets, values ));
+	}
+
+	/**
+	 * 	Set the value of a monophonic bus.
+	 * 	For multichannel busses, use
+	 * 	setnMsg instead.
+	 */
+	public OSCMessage setMsg( float value )
+	{
+		return new OSCMessage( "/c_set", new Object[] {
+			new Integer( getIndex() ), new Float( value )});
+	}
+
+	/**
+	 * 	@warning	has not been tested
+	 */
+	public OSCMessage setMsg( int[] offsets, float[] values )
+	{
+		final int numEntries = offsets.length;
+		if( numEntries != values.length ) {
+			throw new IllegalArgumentException( "Number of offsets / values must be the same" );
+		}
+		final Object[] args = new Object[ numEntries << 1 ];
+		final int idx = getIndex();
+		for( int i = 0, j = 0; i < numEntries; i++ ) {
+			args[ j++ ] = new Integer( idx + offsets[ i ]);
+			args[ j++ ] = new Float( values[ i ]);
+		}
+		return new OSCMessage( "/c_set", args );
+	}
+
+	public void setn( float[] values )
+	throws IOException
+	{
+		getServer().sendMsg( setnMsg( values ));
+	}
+
+	public void setn( int[] offsets, float[][] values )
+	throws IOException
+	{
+		getServer().sendMsg( setnMsg( offsets, values ));
+	}
+
+	/**
+	 * 	@warning	has not been tested
+	 */
+	public OSCMessage setnMsg( float[] values )
+	{
+		final int numValues = values.length;
+		final Object[] args = new Object[ numValues + 2 ];
+		args[ 0 ] = new Integer( getIndex() );
+		args[ 1 ] = new Integer( numValues );
+		for( int i = 0, j = 2; i < numValues; i++, j++ ) {
+			args[ j ] = new Float( values[ i ]);
+		}
+		return new OSCMessage( "/c_setn", args );
+	}
+
+	/**
+	 * 	@warning	has not been tested
+	 */
+	public OSCMessage setnMsg( int[] offsets, float[][] values )
+	{
+		final int numEntries = offsets.length;
+		if( numEntries != values.length ) {
+			throw new IllegalArgumentException( "Number of offsets / values must be the same" );
+		}
+		int numValues = 0;
+		for( int i = 0; i < numEntries; i++ ) numValues += values[ i ].length;
+		
+		final int idx = getIndex();
+		final Object[] args = new Object[ (numEntries << 1) + numValues ];
+		for( int i = 0, j = 0; i < numEntries; i++ ) {
+			args[ j++ ] = new Integer( idx + offsets[ i ]);
+			final float[] vals = values[ i ];
+			final int numVals = vals.length;
+			args[ j++ ] = new Integer( numVals );
+			for( int k = 0; k < numVals; k++, j++ ) {
+				args[ j ] = new Float( vals[ k ]);
+			}
+		}
+		return new OSCMessage( "/c_setn", args );
+	}
+	
+	public void fill( float value )
+	throws IOException
+	{
+		getServer().sendMsg( fillMsg( value ));
+	}
+	
+	public void fill( int offset, int numChans, float value )
+	throws IOException
+	{
+		getServer().sendMsg( fillMsg( offset, numChans, value ));
+	}
+	
+	public void fill( int[] numChans, float[] values )
+	throws IOException
+	{
+		getServer().sendMsg( fillMsg( numChans, values ));
+	}
+	
+	public void fill( int[] offsets, int[] numChans, float[] values )
+	throws IOException
+	{
+		getServer().sendMsg( fillMsg( offsets, numChans, values ));
+	}
+	
+	public OSCMessage fillMsg( float value )
+	{
+		return fillMsg( 0, getNumChannels(), value );
+	}
+	
+	public OSCMessage fillMsg( int offset, int numChans, float value )
+	{
+		return new OSCMessage( "/c_fill", new Object[] {
+			new Integer( getIndex() + offset ), new Integer( numChans ), new Float( value )});
+	}
+	
+	public OSCMessage fillMsg( int[] numChans, float[] values )
+	{
+		final int numEntries = numChans.length;
+		final int[] offsets = new int[ numEntries ];
+		for( int i = 0, j = 0; i < numEntries; i++ ) {
+			offsets[ i ] = j;
+			j += numChans[ i ];
+		}
+		return fillMsg( offsets, numChans, values );
+	}
+	
+	/**
+	 * 	@warning	has not been tested
+	 */
+	public OSCMessage fillMsg( int[] offsets, int[] numChans, float[] values )
+	{
+		final int numEntries = offsets.length;
+		if( (numEntries != numChans.length) || (numEntries != values.length) ) {
+			throw new IllegalArgumentException( "Number of offsets / numChans / values must be the same" );
+		}
+		
+		final Object[] args = new Object[ numEntries * 3 ];
+		final int idx = getIndex();
+		for( int i = 0, j = 0; i < numEntries; i++ ) {
+			args[ j++ ] = new Integer( idx + offsets[ i ]);
+			args[ j++ ] = new Integer( numChans[ i ]);
+			args[ j++ ] = new Integer( idx + offsets[ i ]);
+		}
+		
+		return new OSCMessage( "/c_fill", args );
+	}
+	
+	public void get( GetCompletionAction action )
+	throws IOException
+	{
+		get( 0, action );
+	}
+	
+	public void get( int offset, GetCompletionAction action )
+	throws IOException
+	{
+		get( new int[] { offset }, action );
+	}
+	
+	/**
+	 * 	@warning	has not been tested
+	 */
+	public void get( final int[] offsets, final GetCompletionAction action )
+	throws IOException
+	{
+		final OSCMessage m = getMsg( offsets );
+		final int idx = getIndex();
+		final OSCResponderNode resp = new OSCResponderNode( getServer(), "/c_set", new OSCResponderNode.Action() {
+			public void respond( OSCResponderNode r, OSCMessage msg, long time )
+			{
+				final int numVals = msg.getArgCount() >> 1;
+				if( numVals != offsets.length ) return;
+				for( int i = 0, j = 0; i < numVals; i++, j += 2 ) {
+					if( ((Number) msg.getArg( j )).intValue() != idx + offsets[ i ]) return;
+				}
+				final float[] vals = new float[ numVals ];
+				for( int i = 0, j = 1; i < numVals; i++, j += 2 ) {
+					vals[ i ] = ((Number) msg.getArg( j )).floatValue();
+				}
+				r.remove();
+				action.completion( Bus.this, vals );
+			}
+		});
+		resp.add();
+		getServer().sendMsg( m );
+	}
+	
+	/**
+	 * 	@warning	has not been tested
+	 */
+	public void getn( final int[] offsets, final int[] numChans, final GetCompletionAction action )
+	throws IOException
+	{
+		final int numEntries = offsets.length;
+		if( numEntries != numChans.length ) {
+			throw new IllegalArgumentException( "Number of offsets / numChans must be the same" );
+		}
+
+		final OSCMessage m = getnMsg( offsets, numChans );
+		final int idx = getIndex();
+		final OSCResponderNode resp = new OSCResponderNode( getServer(), "/c_setn", new OSCResponderNode.Action() {
+			public void respond( OSCResponderNode r, OSCMessage msg, long time )
+			{
+				final int numArgs = msg.getArgCount();
+				int numVals = 0;
+				for( int i = 0, j = 0; j < numArgs; i++ ) {
+					if( i >= numEntries ) return;
+					final int nc = numChans[ i ];
+					if( ((Number) msg.getArg( j++ )).intValue() != idx + offsets[ i ]) return;
+					if( ((Number) msg.getArg( j++ )).intValue() != nc ) return;
+					numVals += nc;
+					j += nc;
+				}
+				
+				final float[] vals = new float[ numVals ];
+				for( int i = 0, j = 2, k = 0; i < numEntries; i++, j += 2 ) {
+					for( int m = 0; m < numChans[ i ]; m++ ) {
+						vals[ k++ ] = ((Number) msg.getArg( j++ )).floatValue();
+					}
+				}
+				r.remove();
+				action.completion( Bus.this, vals );
+			}
+		});
+		resp.add();
+		getServer().sendMsg( m );
+	}
+	
+	public OSCMessage getMsg()
+	{
+		return new OSCMessage( "/c_get", new Object[] { new Integer( getIndex() )});
+	}
+
+	/**
+	 * 	@warning	has not been tested
+	 */
+	public OSCMessage getMsg( int[] offsets )
+	{
+		final int numOffsets = offsets.length;
+		final Object[] args = new Object[ numOffsets ];
+		final int idx = getIndex();
+		for( int i = 0; i < numOffsets; i++ ) {
+			args[ i ] = new Integer( idx + offsets[ i ]);
+		}
+		return new OSCMessage( "/c_get", args );
+	}
+	
+	public OSCMessage getnMsg()
+	{
+		return getnMsg( 0, getNumChannels() );
+	}
+	
+	public OSCMessage getnMsg( int numChans )
+	{
+		return getnMsg( 0, numChans );
+	}
+	
+	public OSCMessage getnMsg( int offset, int numChans )
+	{
+		return new OSCMessage( "/c_getn", new Object[] {
+			new Integer( getIndex() + offset ), new Integer( numChans )});
+	}
+	
+	/**
+	 * 	@warning	has not been tested
+	 */
+	public OSCMessage getnMsg( int[] offsets, int[] numChans )
+	{
+		final int numEntries = offsets.length;
+		if( numEntries != numChans.length ) {
+			throw new IllegalArgumentException( "Number of offsets / numChans must be the same" );
+		}
+		final int idx = getIndex();
+		final Object[] args = new Object[ numEntries << 1 ];
+		for( int i = 0, j = 0; i < numEntries; i++ ) {
+			args[ j++ ] = new Integer( idx + offsets[ i ]);
+			args[ j++ ] = new Integer( numChans[ i ]);
+		}
+		return new OSCMessage( "/c_getn", args );
+	}
 	
 	public void free()
 	{
-		if( getIndex() == -1 ) {
+		final int idx = getIndex();
+		if( idx == -1 ) {
 			printOn( Server.getPrintStream() );
 			Server.getPrintStream().println( " has already been freed" );
 			return;
 		}
 
 		if( getRate() == kAudioRate ) {
-			getServer().getAudioBusAllocator().free(index);
+			getServer().getAudioBusAllocator().free( idx );
 		} else if( getRate() == kControlRate ) {
-			getServer().getControlBusAllocator().free(index);
+			getServer().getControlBusAllocator().free( idx );
 		} else {
 			throw new IllegalStateException( getRate().toString() );
 		}
@@ -343,5 +598,20 @@ implements Constants
 //			^{ this.ar }.play(target, outbus, fadeTime, addAction);
 //		});
 //	}
-}
 
+	// ---------- internal classes and interfaces ----------
+
+	/**
+	 *	Interface describing an action to take place after
+	 *	an asynchronous bus query is completed.
+	 */
+	public static interface GetCompletionAction
+	{
+	   /**
+		*	Executes the completion action.
+		*
+		*	@param	bus		the bus whose asynchronous action is completed.
+		*/
+		public void completion( Bus bus, float[] values );
+	}
+}

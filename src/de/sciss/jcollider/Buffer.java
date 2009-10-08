@@ -47,10 +47,8 @@ package de.sciss.jcollider;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.net.SocketAddress;
 
 import de.sciss.net.OSCBundle;
-import de.sciss.net.OSCListener;
 import de.sciss.net.OSCMessage;
 
 /**
@@ -2127,16 +2125,18 @@ implements Constants
 	public void query()
 	throws IOException
 	{
-		new OSCResponderNode( getServer(), "/b_info", new OSCListener() {
-			public void messageReceived( OSCMessage msg, SocketAddress sender, long time )
+		new OSCResponderNode( getServer(), "/b_info", new OSCResponderNode.Action() {
+			public void respond( OSCResponderNode r, OSCMessage msg, long time )
 			{
+				if( ((Number) msg.getArg( 0 )).intValue() != getBufNum() ) return;
 				Server.getPrintStream().println(
 					"bufNum      : " + msg.getArg( 0 ) + 
 					"\nnumFrames   : " + msg.getArg( 1 ) + 
 					"\nnumChannels : " + msg.getArg( 2 ) + 
 					"\nsampleRate  : " + msg.getArg( 3 ) + "\n" );
+				r.remove();
 			}
-		}).removeWhenDone().add();
+		}).add();
 		
 		getServer().sendMsg( queryMsg() ); 
 	}

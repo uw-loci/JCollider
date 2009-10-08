@@ -52,11 +52,11 @@ import javax.swing.SwingUtilities;
  *  This is a helper class containing utility static functions
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.35, 19-Sep-09
+ *  @version	0.36, 08-Oct-09
  */
 public abstract class JCollider
 {
-	private static final double VERSION	= 0.35;
+	private static final double VERSION	= 0.36;
 	private static final ResourceBundle resBundle = ResourceBundle.getBundle( "JColliderStrings" );
 //	private static final Preferences prefs = Preferences.userNodeForPackage( JCollider.class );
 
@@ -88,11 +88,14 @@ public abstract class JCollider
 		final String demoClass;
 	
 		if( args.length == 1 ) {
-			if( args[ 0 ].equals( "--test1" )) {
+			final String arg1 = args[ 0 ];
+			if( arg1.equals( "--test1" )) {
 				demoClass = "de.sciss.jcollider.test.Demo";
-			} else if( args[ 0 ].equals( "--test2" )) {
+			} else if( arg1.equals( "--test2" )) {
 				demoClass = "de.sciss.jcollider.test.MotoRevCtrl";
-			} else if( args[ 0 ].equals( "--bindefs" )) {
+			} else if( arg1.equals( "--test3" )) {
+				demoClass = "de.sciss.jcollider.test.BusTests";
+			} else if( arg1.equals( "--bindefs" )) {
 				try {
 					UGenInfo.readDefinitions();
 					UGenInfo.writeBinaryDefinitions( new File( "ugendefs.bin" ));
@@ -133,6 +136,7 @@ public abstract class JCollider
 			System.out.println( "\nThe following options are available:\n"+
 			                    "--test1    SynthDef demo\n"+
 			                    "--test2    MotoRev Control Demo\n"+
+			                    "--test3    Bus Tests\n"+
 			                    "--bindefs  Create Binary UGen Definitions\n");
 			System.exit( 1 );
 		}

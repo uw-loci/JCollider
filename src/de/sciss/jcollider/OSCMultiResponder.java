@@ -212,7 +212,7 @@ implements OSCListener
 	}
 
 	protected void removeNode( OSCResponderNode node )
-	throws IOException
+//	throws IOException
 	{
 		final List specialNodes;
 

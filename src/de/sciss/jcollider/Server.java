@@ -56,7 +56,6 @@ import java.io.PrintStream;
 import java.net.ConnectException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -67,8 +66,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.Timer;
-//import java.util.Timer;
-//import java.util.TimerTask;
 
 import de.sciss.app.BasicEvent;
 import de.sciss.app.EventManager;
@@ -76,7 +73,6 @@ import de.sciss.net.OSCBundle;
 import de.sciss.net.OSCChannel;
 import de.sciss.net.OSCClient;
 import de.sciss.net.OSCMessage;
-import de.sciss.net.OSCListener;
 
 /**
  *	Closely following SClang's server class,
@@ -1423,8 +1419,8 @@ implements Constants, EventManager.Processor
 		// /b_info on the way
 		// keeps a reference count of waiting Buffers so that only one responder is needed
 		if( !waitingForBufInfo ) {
-			bufInfoResponder	= new OSCResponderNode( this, "/b_info", new OSCListener() {
-				public void messageReceived( OSCMessage msg, SocketAddress sender, long time )
+			bufInfoResponder	= new OSCResponderNode( this, "/b_info", new OSCResponderNode.Action() {
+				public void respond( OSCResponderNode r, OSCMessage msg, long time )
 				{
 					if( msg.getArgCount() < 4 ) return;
 				
@@ -1438,12 +1434,9 @@ implements Constants, EventManager.Processor
 							
 							if( --waitingBufs == 0 ) {
 								waitingForBufInfo = false;
-								bufInfoResponder.remove();
+								r.remove();
 							}
 						}
-					}
-					catch( IOException e1 ) {
-						printError( "Server.waitForBufInfo", e1 );
 					}
 					catch( ClassCastException e2 ) {
 						printError( "Server.waitForBufInfo", e2 );
@@ -1842,7 +1835,7 @@ resetBufferAutoInfo();
 	
 	private class StatusWatcher
 //	extends TimerTask
-	implements OSCListener, ActionListener
+	implements OSCResponderNode.Action, ActionListener
 	{
 		private int							alive			= 0;
 		private final	int					delayMillis;
@@ -1914,7 +1907,7 @@ resetBufferAutoInfo();
 		}
 		
 		// XXX create specific osc message decoder
-		public void messageReceived( OSCMessage msg, SocketAddress sender, long time )
+		public void respond( OSCResponderNode r, OSCMessage msg, long time )
 		{
 			if( msg.getArgCount() < 9 ) return;
 			
@@ -1946,7 +1939,7 @@ resetBufferAutoInfo();
 	 *	for asynchronous communication.
 	 */
 	private class SyncResponder
-	implements OSCListener
+	implements OSCResponderNode.Action
 	{
 		protected volatile OSCMessage	replyMsg	= null;
 		private final OSCResponderNode	doneResp;
@@ -2003,21 +1996,11 @@ resetBufferAutoInfo();
 
 		protected void remove()
 		{
-			try {
-				doneResp.remove();
-			}
-			catch( IOException e1 ) {
-				printError( "SyncResponder.remove", e1 );
-			}
-			try {
-				if( failResp != null ) failResp.remove();
-			}
-			catch( IOException e1 ) {
-				printError( "SyncResponder.remove", e1 );
-			}
+			doneResp.remove();
+			if( failResp != null ) failResp.remove();
 		}
 		
-		public void messageReceived( OSCMessage msg, SocketAddress sender, long time )
+		public void respond( OSCResponderNode r, OSCMessage msg, long time )
 		{
 			if( msg.getName().equals( doneCmdName )) {
 				doneMessageReceived( msg );
