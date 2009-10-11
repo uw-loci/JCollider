@@ -2,7 +2,7 @@
  *  Node.java
  *  JCollider
  *
- *  Copyright (c) 2004-2008 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2009 Hanns Holger Rutz. All rights reserved.
  *
  *	This software is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -68,7 +68,7 @@ import de.sciss.net.OSCMessage;
  *				is run-, set-, trace- and free-messages
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.32, 11-Feb-08
+ *  @version	0.36, 11-Oct-09
  *
  *	@see		de.sciss.jcollider.gui.NodeTreeManager
  *	@see		NodeWatcher
@@ -819,7 +819,7 @@ implements Constants, TreeNode
 	}
 
 	/**
-	 *	Maps a list of the node's control parameters to be automically read from global control busses.
+	 *	Maps a list of the node's control parameters to be automatically read from global control busses.
 	 *	This sends a <code>/n_map</code> message to the server.
 	 *	If the node is a <code>Synth</code>, it maps the synth's controls.
 	 *	If the node is a <code>Group</code>, it maps the controls of
@@ -843,7 +843,7 @@ implements Constants, TreeNode
 
 	/**
 	 *	Creates an OSC <code>/n_map</code> message to map a list of the node's control parameters to
-	 *	be automically read from global control busses.
+	 *	be automatically read from global control busses.
 	 *	Sending this message to a <code>Synth</code> maps the synth's controls.
 	 *	Sending this message to a <code>Group</code> maps the controls of
 	 *	all synths in this group and subgroups of this group.
@@ -871,7 +871,7 @@ implements Constants, TreeNode
 	}
 
 	/**
-	 *	Maps a list of the node's control parameters to be automically read from global control busses.
+	 *	Maps a list of the node's control parameters to be automatically read from global control busses.
 	 *	This sends a <code>/n_map</code> message to the server.
 	 *	If the node is a <code>Synth</code>, it maps the synth's controls.
 	 *	If the node is a <code>Group</code>, it maps the controls of
@@ -895,7 +895,7 @@ implements Constants, TreeNode
 
 	/**
 	 *	Creates an OSC <code>/n_map</code> message to map a list of the node's control parameters to
-	 *	be automically read from global control busses.
+	 *	be automatically read from global control busses.
 	 *	Sending this message to a <code>Synth</code> maps the synth's controls.
 	 *	Sending this message to a <code>Group</code> maps the controls of
 	 *	all synths in this group and subgroups of this group.
@@ -923,7 +923,7 @@ implements Constants, TreeNode
 	}
 	
 	/**
-	 *	Maps a list of the node's control parameters to be automically read from global control busses.
+	 *	Maps a list of the node's control parameters to be automatically read from global control busses.
 	 *	This sends a <code>/n_map</code> message to the server.
 	 *	If the node is a <code>Synth</code>, it maps the synth's controls.
 	 *	If the node is a <code>Group</code>, it maps the controls of
@@ -947,7 +947,7 @@ implements Constants, TreeNode
 
 	/**
 	 *	Creates an OSC <code>/n_map</code> message to map a list of the node's control parameters to
-	 *	be automically read from global control busses.
+	 *	be automatically read from global control busses.
 	 *	Sending this message to a <code>Synth</code> maps the synth's controls.
 	 *	Sending this message to a <code>Group</code> maps the controls of
 	 *	all synths in this group and subgroups of this group.
@@ -975,7 +975,7 @@ implements Constants, TreeNode
 	}
 
 	/**
-	 *	Maps a list of the node's control parameters to be automically read from global control busses.
+	 *	Maps a list of the node's control parameters to be automatically read from global control busses.
 	 *	This sends a <code>/n_map</code> message to the server.
 	 *	If the node is a <code>Synth</code>, it maps the synth's controls.
 	 *	If the node is a <code>Group</code>, it maps the controls of
@@ -999,7 +999,7 @@ implements Constants, TreeNode
 
 	/**
 	 *	Creates an OSC <code>/n_map</code> message to map a list of the node's control parameters to
-	 *	be automically read from global control busses.
+	 *	be automatically read from global control busses.
 	 *	Sending this message to a <code>Synth</code> maps the synth's controls.
 	 *	Sending this message to a <code>Group</code> maps the controls of
 	 *	all synths in this group and subgroups of this group.
@@ -1027,7 +1027,26 @@ implements Constants, TreeNode
 	}
 
 	/**
-	 *	Maps a list of the node's control parameters to be automically read from global control busses.
+	 *	Convenience method for a single mapping.
+	 */
+	public void map( String ctrlName, Bus bus )
+	throws IOException
+	{
+		getServer().sendMsg( mapMsg( ctrlName, bus ));
+	}
+	
+	/**
+	 *	Convenience method for a single mapping.
+	 */
+	public OSCMessage mapMsg( String ctrlName, Bus bus )
+	{
+		return( new OSCMessage( "/n_map", new Object[] {
+			new Integer( getNodeID() ), ctrlName,
+			new Integer( bus == null ? -1 : bus.getIndex() )}));
+	}
+	
+	/**
+	 *	Maps a list of the node's control parameters to be automatically read from global control busses.
 	 *	This sends a <code>/n_map</code> message to the server.
 	 *	If the node is a <code>Synth</code>, it maps the synth's controls.
 	 *	If the node is a <code>Group</code>, it maps the controls of
@@ -1053,7 +1072,7 @@ implements Constants, TreeNode
 
 	/**
 	 *	Creates an OSC <code>/n_map</code> message to map a list of the node's control parameters to
-	 *	be automically read from global control busses.
+	 *	be automatically read from global control busses.
 	 *	Sending this message to a <code>Synth</code> maps the synth's controls.
 	 *	Sending this message to a <code>Group</code> maps the controls of
 	 *	all synths in this group and subgroups of this group.
@@ -1084,7 +1103,7 @@ implements Constants, TreeNode
 	}
 
 	/**
-	 *	Maps a list of the node's control parameters to be automically read from global control busses.
+	 *	Maps a list of the node's control parameters to be automatically read from global control busses.
 	 *	This sends a <code>/n_mapn</code> message to the server.
 	 *	If the node is a <code>Synth</code>, it maps the synth's controls.
 	 *	If the node is a <code>Group</code>, it maps the controls of
@@ -1110,7 +1129,7 @@ implements Constants, TreeNode
 
 	/**
 	 *	Creates an OSC <code>/n_mapn</code> message to map a list of the node's control parameters to
-	 *	be automically read from global control busses.
+	 *	be automatically read from global control busses.
 	 *	Sending this message to a <code>Synth</code> maps the synth's controls.
 	 *	Sending this message to a <code>Group</code> maps the controls of
 	 *	all synths in this group and subgroups of this group.
@@ -1141,7 +1160,7 @@ implements Constants, TreeNode
 	}
 	
 	/**
-	 *	Maps a list of the node's control parameters to be automically read from global control busses.
+	 *	Maps a list of the node's control parameters to be automatically read from global control busses.
 	 *	This sends a <code>/n_mapn</code> message to the server.
 	 *	If the node is a <code>Synth</code>, it maps the synth's controls.
 	 *	If the node is a <code>Group</code>, it maps the controls of
@@ -1165,7 +1184,7 @@ implements Constants, TreeNode
 
 	/**
 	 *	Creates an OSC <code>/n_mapn</code> message to map a list of the node's control parameters to
-	 *	be automically read from global control busses.
+	 *	be automatically read from global control busses.
 	 *	Sending this message to a <code>Synth</code> maps the synth's controls.
 	 *	Sending this message to a <code>Group</code> maps the controls of
 	 *	all synths in this group and subgroups of this group.
@@ -1194,7 +1213,7 @@ implements Constants, TreeNode
 	}
 
 	/**
-	 *	Maps a list of the node's control parameters to be automically read from global control busses.
+	 *	Maps a list of the node's control parameters to be automatically read from global control busses.
 	 *	This sends a <code>/n_mapn</code> message to the server.
 	 *	If the node is a <code>Synth</code>, it maps the synth's controls.
 	 *	If the node is a <code>Group</code>, it maps the controls of
@@ -1218,7 +1237,7 @@ implements Constants, TreeNode
 
 	/**
 	 *	Creates an OSC <code>/n_mapn</code> message to map a list of the node's control parameters to
-	 *	be automically read from global control busses.
+	 *	be automatically read from global control busses.
 	 *	Sending this message to a <code>Synth</code> maps the synth's controls.
 	 *	Sending this message to a <code>Group</code> maps the controls of
 	 *	all synths in this group and subgroups of this group.
