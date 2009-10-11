@@ -2,7 +2,7 @@
  *  JCollider.java
  *  JCollider
  *
- *  Copyright (c) 2004-2008 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2009 Hanns Holger Rutz. All rights reserved.
  *
  *	This software is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -52,7 +52,7 @@ import javax.swing.SwingUtilities;
  *  This is a helper class containing utility static functions
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.36, 08-Oct-09
+ *  @version	0.36, 11-Oct-09
  */
 public abstract class JCollider
 {
