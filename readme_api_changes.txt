@@ -2,6 +2,12 @@ In the course of the development of JCollider, some API changes were made. Gener
 
 This document tries to help updating code that uses old versions of JCollider.
 
+API changes from v0.35 to v0.36
+	- in class de.sciss.jcollider. OSCResponderNode
+		dropping IOException from remove()
+
+		to compile you might need to remove old try ...Êcatch( IOException e ) ... clauses.
+
 API changes from v0.28 to v0.29
 	- in class de.sciss.jcollider.OSCMultiResponder
 		not subclass of OSCReceiver anymore. new constructor:
