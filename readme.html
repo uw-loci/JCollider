@@ -1,4 +1,5 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+            "http://www.w3.org/TR/html4/loose.dtd">
 <HTML>
 <HEAD>
 	<TITLE>JCollider Readme</TITLE>
@@ -143,9 +144,16 @@ the demo opens two frames, one containing a list of synth defs, the other one be
 note that some synth defs will only run on mac os because they use mac-only ugens (e.g. <code>MouseX</code>). also note that <code>CombDist</code> and <code>RingMod</code> are insert effects which have to be started <I>before</I> starting an oscillator synth def.
 </P>
 <P>Alternatively, <code>--test2</code> runs a demo for generating a SynthDef with controls which can be operated from a GUI.
-</P><P>
+</P>
+<h3>projects using jcollider</h3>
+<UL>
+<LI><A HREF="http://www.sciss.de/eisenkraut" CLASS="ext" TARGET="_blank">Eisenkraut</A> &ndash; a cross-platform audio file editor.</LI>
+<LI><A HREF="http://sourceforge.net/projects/superj/" CLASS="ext" TARGET="_blank">Superj</A> &ndash; an Open Sound Control (OSC) enabled audio scripting server.</LI>
+<LI><A HREF="http://www.sciss.de/swingOSC" CLASS="ext" TARGET="_blank">SwingOSC</A> &ndash; an OpenSoundControl (OSC) server intended for scripting Java(tm), such as to create graphical user interfaces with AWT or Swing classes.</LI>
+<LI><A HREF="http://code.google.com/p/woolooloo/" CLASS="ext" TARGET="_blank">Tacchi</A> &ndash; combines the multi-touch/fiducial recognition functionality of the opensource reacTIVision, and Community Core Vision projects with the strength of Supercollider in the form of JCollider and the strength of the Java 2D libraries to allow for an opensource alternative to the Reactable.</LI>
+</UL>
 <P>
-when starting to write your own application, you may also want to have a look at <A HREF="http://www.sciss.de/eisenkraut" CLASS="ext">Eisenkraut</A> which uses the JCollider library. feel free to contact me if you are interested in developing things with JCollider, or even more if you like to co-develop JCollider. feel free to send me interesting music (not by email!).
+Please let me know when you want to have your projects added here.
 </P>
 <h3>
 to-do / known issues
@@ -155,7 +163,7 @@ to-do / known issues
 <LI>add missing methods from sclang counterparts</LI>
 <LI>add GUI panel for server options</LI>
 </UL>
-<h3>Change History</h3>
+<h3>change history</h3>
 <h4>v0.36 (sep 2009 - SVN rev. 25)</h4>
 <UL>
 <LI>Bus: adding set(n)(Msg), get(n)(Msg), fill(Msg)</LI>
