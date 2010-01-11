@@ -2,7 +2,7 @@
  *  Server.java
  *  JCollider
  *
- *  Copyright (c) 2004-2009 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2010 Hanns Holger Rutz. All rights reserved.
  *
  *	This software is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -42,6 +42,7 @@
  *					; added extended sendMsgSync and sendBundleSync methods ; responders recreated after quit
  *		01-Oct-06	uses new NetUtil and allows for TCP mode
  *		25-Aug-08	OSC buffer size increased to 64K
+ *		11-Jan-10	works with stupidly changed scsynth OSC replies
  */
 
 package de.sciss.jcollider;
@@ -99,7 +100,7 @@ import de.sciss.net.OSCMessage;
  *						regarded thread safe
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.33, 25-Aug-08
+ *  @version	0.34, 11-Jan-10
  */
 public class Server
 implements Constants, EventManager.Processor
@@ -584,7 +585,7 @@ implements Constants, EventManager.Processor
 	/**
 	 *	Queries the server's (audio) sampling rate.
 	 *	This is the <strong>nominal</strong> rate
-	 *	as returned by the <code>status.reply</code>
+	 *	as returned by the <code>/status.reply</code>
 	 *	message from the server. This is only valid
 	 *	when the server is running and the ping-thread
 	 *	was started. To be automatically informed about
@@ -606,7 +607,7 @@ implements Constants, EventManager.Processor
 	/**
 	 *	Queries the latest reported server status.
 	 *	The returned object is a snapshot of what
-	 *	the server last send using a <code>status.reply</code>
+	 *	the server last send using a <code>/status.reply</code>
 	 *	message. It's only valid when the server is
 	 *	running and the ping-thread is running.
 	 *
@@ -1853,7 +1854,7 @@ resetBufferAutoInfo();
 		{
 			delayMillis			= (int) (delay * 1000);
 			periodMillis		= (int) (period * 1000);
-			resp				= new OSCResponderNode( enc_this, "status.reply", this );
+			resp				= new OSCResponderNode( enc_this, "/status.reply", this );
 			this.deathBounces	= deathBounces;
 			timer				= new Timer( periodMillis, this );
 			timer.setInitialDelay( delayMillis );

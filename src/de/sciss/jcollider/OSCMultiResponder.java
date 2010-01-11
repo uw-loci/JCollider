@@ -2,7 +2,7 @@
  *  OSCresponderNode.java
  *  JCollider
  *
- *  Copyright (c) 2004-2009 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2010 Hanns Holger Rutz. All rights reserved.
  *
  *	This software is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -35,6 +35,8 @@
  *		26-Aug-05	removed potential null pointer exception in removeNode()
  *		30-Sep-06	modified to comply with new NetUtil version
  *		08-Apr-08	fixes potential locking problem in messageReceived
+ *		11-Jan-09	ensuring command names begin with a leading slash
+ *					to ensure compatibility with different scsynth versions
  */
 
 package de.sciss.jcollider;
@@ -75,7 +77,7 @@ import de.sciss.net.OSCListener;
  *	a multi responder for its address upon instantiation.
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.33, 08-Apr-08
+ *  @version	0.34, 11-Jan-10
  */
 public class OSCMultiResponder
 // extends OSCReceiver
@@ -283,11 +285,13 @@ implements OSCListener
 
 	public void messageReceived( OSCMessage msg, SocketAddress sender, long time )
 	{
-		final				List	specialNodes;
-		final				int		numResps;
-	
+		final List		specialNodes;
+		final int		numResps;
+		final String 	cmdNameTmp	= msg.getName();
+		final String	cmdName		= (cmdNameTmp.charAt( 0 ) == '/') ? cmdNameTmp : "/" + cmdNameTmp;
+		
 		synchronized( sync ) {
-			specialNodes = (List) mapCmdToNodes.get( msg.getName() );
+			specialNodes = (List) mapCmdToNodes.get( cmdName );
 			if( specialNodes == null ) return;
 			numResps = specialNodes.size();
 			resps = (OSCResponderNode[]) specialNodes.toArray( resps );

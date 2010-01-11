@@ -2,7 +2,7 @@
  *  JCollider.java
  *  JCollider
  *
- *  Copyright (c) 2004-2009 Hanns Holger Rutz. All rights reserved.
+ *  Copyright (c) 2004-2010 Hanns Holger Rutz. All rights reserved.
  *
  *	This software is free software; you can redistribute it and/or
  *	modify it under the terms of the GNU General Public License
@@ -52,11 +52,11 @@ import javax.swing.SwingUtilities;
  *  This is a helper class containing utility static functions
  *
  *  @author		Hanns Holger Rutz
- *  @version	0.36, 11-Oct-09
+ *  @version	0.37, 11-Jan-10
  */
 public abstract class JCollider
 {
-	private static final double VERSION	= 0.36;
+	private static final double VERSION	= 0.37;
 	private static final ResourceBundle resBundle = ResourceBundle.getBundle( "JColliderStrings" );
 //	private static final Preferences prefs = Preferences.userNodeForPackage( JCollider.class );
 
