@@ -383,7 +383,7 @@ implements Constants, Comparable
 			builderFactory.setValidating( true );
 			builder			= builderFactory.newDocumentBuilder();
 			builder.setEntityResolver( dtdResolver );
-			domDoc			= builder.parse( UGenInfo.class.getResourceAsStream( "ugendefs.xml" ));
+			domDoc			= builder.parse( UGenInfo.class.getResourceAsStream( "/ugendefs.xml" ));
 			node			= domDoc.getDocumentElement();
 			ugenList		= node.getElementsByTagName( "ugen" );
 			
@@ -541,7 +541,8 @@ implements Constants, Comparable
 		Set						rates;
 		Map						specials;
 
-		dis = new DataInputStream( new BufferedInputStream( UGenInfo.class.getResourceAsStream( "ugendefs.bin" )));
+		final InputStream ugendefs = UGenInfo.class.getResourceAsStream( "/ugendefs.bin" );
+		dis = new DataInputStream( new BufferedInputStream( ugendefs ));
 		try {
 			if( dis.readInt() != BINARY_FILE_COOKIE ) throw new IOException( "Not a valid binary ugen file" );
 			if( dis.readShort() > BINARY_FILE_VERSION ) throw new IOException( "Unsupport binary ugen file version" );
@@ -788,7 +789,7 @@ implements Constants, Comparable
 //System.err.println( "hier : "+publicId+"; "+systemId );
 
 			if( systemId.endsWith( UGENDEFS_DTD )) {	// replace our dtd with java resource
-				InputStream dtdStream = getClass().getClassLoader().getResourceAsStream( UGENDEFS_DTD );
+				InputStream dtdStream = getClass().getResourceAsStream( UGENDEFS_DTD );
 				InputSource is = new InputSource( dtdStream );
 				is.setSystemId( UGENDEFS_DTD );
 				return is;
