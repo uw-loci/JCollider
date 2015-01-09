@@ -5,6 +5,12 @@
 		http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
+	<parent>
+		<groupId>org.scijava</groupId>
+		<artifactId>pom-scijava</artifactId>
+		<version>5.4.0</version>
+	</parent>
+
 	<groupId>de.sciss</groupId>
 	<artifactId>jcollider</artifactId>
 	<version>0.38-SNAPSHOT</version>
@@ -26,12 +32,6 @@
 			<name>Hanns Holger Rutz</name>
 		</developer>
 	</developers>
-
-	<properties>
-		<!-- NB: Avoid platform encoding warning when copying resources. -->
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-	</properties>
 
 	<dependencies>
 		<dependency>
