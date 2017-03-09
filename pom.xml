@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>org.scijava</groupId>
 		<artifactId>pom-scijava</artifactId>
-		<version>5.4.0</version>
+		<version>14.0.0</version>
 	</parent>
 
 	<groupId>de.sciss</groupId>
@@ -19,6 +19,10 @@
 	<description>JCollider is a java library to build clients for the SuperCollider server architecture.</description>
 	<url>http://www.sciss.de/jcollider/</url>
 	<inceptionYear>2005</inceptionYear>
+	<organization>
+		<name>Hanns Holger Rutz</name>
+		<url>http://sciss.de/</url>
+	</organization>
 	<licenses>
 		<license>
 			<name>GNU General Public License v2+</name>
@@ -30,8 +34,52 @@
 	<developers>
 		<developer>
 			<name>Hanns Holger Rutz</name>
+			<roles>
+				<role>founder</role>
+			</roles>
+		</developer>
+		<developer>
+			<id>ctrueden</id>
+			<name>Curtis Rueden</name>
+			<url>http://imagej.net/User:Rueden</url>
+			<roles>
+				<role>maintainer</role>
+			</roles>
 		</developer>
 	</developers>
+	<contributors>
+		<contributor>
+			<name>None</name>
+		</contributor>
+	</contributors>
+
+	<mailingLists>
+		<mailingList>
+			<name>None</name>
+		</mailingList>
+	</mailingLists>
+
+	<scm>
+		<connection>scm:git:git://github.com/uw-loci/jcollider</connection>
+		<developerConnection>scm:git:git@github.com:uw-loci/jcollider</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/uw-loci/jcollider</url>
+	</scm>
+	<issueManagement>
+		<system>GitHub Issues</system>
+		<url>https://github.com/uw-loci/jcollider/issues</url>
+	</issueManagement>
+	<ciManagement>
+		<system>None</system>
+	</ciManagement>
+
+	<properties>
+		<main-class>de.sciss.jcollider.JCollider</main-class>
+		<package-name>de.sciss.jcollider</package-name>
+		<license.licenseName>gpl_v3</license.licenseName>
+		<license.copyrightOwners>Hanns Holger Rutz.</license.copyrightOwners>
+		<license.projectName>JCollider library for SuperCollider clients.</license.projectName>
+	</properties>
 
 	<dependencies>
 		<dependency>
@@ -40,21 +88,4 @@
 			<version>1.0.0</version>
 		</dependency>
 	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.4</version>
-				<configuration>
-					<archive>
-						<manifest>
-							<mainClass>de.sciss.jcollider.JCollider</mainClass>
-						</manifest>
-					</archive>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
-
 </project>
