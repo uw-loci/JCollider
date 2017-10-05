@@ -80,6 +80,9 @@
 		<license.licenseName>gpl_v3</license.licenseName>
 		<license.copyrightOwners>Hanns Holger Rutz.</license.copyrightOwners>
 		<license.projectName>JCollider library for SuperCollider clients.</license.projectName>
+
+		<!-- NB: Deploy releases to the ImageJ Maven repository. -->
+		<releaseProfiles>deploy-to-imagej</releaseProfiles>
 	</properties>
 
 	<dependencies>
